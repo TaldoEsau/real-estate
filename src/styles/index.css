@@ -1,0 +1,156 @@
+/* ==========================================================================
+   AURA ESTATES - LUXURY REAL ESTATE DESIGN SYSTEM
+   ========================================================================== */
+
+:root {
+  /* Color Palette */
+  --bg-darkest: #060A12;
+  --bg-dark: #0B1323;
+  --bg-card: rgba(15, 25, 45, 0.75);
+  --bg-card-hover: rgba(22, 36, 64, 0.85);
+  --bg-glass: rgba(11, 19, 35, 0.7);
+  --bg-glass-modal: rgba(7, 11, 20, 0.92);
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-gold: rgba(197, 168, 128, 0.25);
+  --border-gold-hover: rgba(197, 168, 128, 0.6);
+
+  --gold-primary: #C5A880;
+  --gold-light: #E5D5C0;
+  --gold-dark: #9E825D;
+  --gold-gradient: linear-gradient(135deg, #DFCAAA 0%, #C5A880 50%, #A3865E 100%);
+
+  --text-main: #F3F4F6;
+  --text-muted: #9CA3AF;
+  --text-dim: #6B7280;
+  --text-gold: #DFC7A5;
+
+  --status-confirmed: #10B981;
+  --status-pending: #F59E0B;
+  --status-cancelled: #EF4444;
+  --status-rescheduled: #6366F1;
+
+  /* Typography */
+  --font-serif: 'Cinzel', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* Transitions & Shadows */
+  --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --shadow-gold: 0 8px 32px rgba(197, 168, 128, 0.15);
+  --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+}
+
+/* Base Resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--bg-darkest);
+  color: var(--text-main);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at 15% 10%, rgba(197, 168, 128, 0.05) 0%, transparent 45%),
+              radial-gradient(circle at 85% 60%, rgba(30, 58, 102, 0.12) 0%, transparent 50%),
+              var(--bg-darkest);
+  color: var(--text-main);
+  overflow-x: hidden;
+  line-height: 1.55;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-darkest);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(197, 168, 128, 0.25);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}
+
+/* Typography Helpers */
+h1, h2, h3, h4, .font-serif {
+  font-family: var(--font-serif);
+  letter-spacing: 0.02em;
+}
+
+.gold-gradient-text {
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-subtle);
+  transition: all var(--transition-smooth);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-gold-hover);
+  box-shadow: var(--shadow-gold);
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* Utility Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(197, 168, 128, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(197, 168, 128, 0.45); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 0.9s linear infinite;
+}
+

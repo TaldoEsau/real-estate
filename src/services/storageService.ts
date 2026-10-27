@@ -107,27 +107,36 @@ async function checkAndSyncSupabase() {
       if (cloudProps && cloudProps.length > 0) {
         const mappedProps: Property[] = cloudProps.map((cp: any) => ({
           id: cp.id,
+          tenantId: cp.tenant_id,
+          code: cp.code || `REF${cp.id.slice(0, 4).toUpperCase()}`,
           title: cp.title,
           slug: cp.slug,
           description: cp.description || '',
-          price: Number(cp.price),
-          propertyType: cp.property_type || 'villa',
+          price: Number(cp.price) || 0,
+          rentalPrice: Number(cp.rental_price) || 0,
+          condoFee: Number(cp.condo_fee) || 0,
+          iptuFee: Number(cp.iptu_fee) || 0,
+          propertyType: cp.property_type || 'apartment',
           listingType: cp.listing_type || 'for_sale',
           status: cp.status || 'active',
           location: {
             address: cp.address || '',
+            number: cp.number,
+            neighborhood: cp.neighborhood || '',
             city: cp.city || '',
             state: cp.state || '',
             zipCode: cp.zip_code,
-            lat: Number(cp.lat) || 34.0522,
-            lng: Number(cp.lng) || -118.2437
+            lat: Number(cp.lat) || -23.55052,
+            lng: Number(cp.lng) || -46.633308
           },
           specs: {
             bedrooms: Number(cp.bedrooms) || 1,
+            suites: Number(cp.suites) || 0,
             bathrooms: Number(cp.bathrooms) || 1,
-            areaSqFt: Number(cp.area_sq_ft) || 1000,
+            areaSqM: Number(cp.area_sq_m) || Number(cp.area_sq_ft ? Math.round(cp.area_sq_ft / 10.764) : 100),
+            areaSqFt: Number(cp.area_sq_ft) || Number(cp.area_sq_m ? Math.round(cp.area_sq_m * 10.764) : 1076),
             yearBuilt: cp.year_built,
-            garageSpaces: cp.garage_spaces
+            garageSpaces: cp.garage_spaces || 0
           },
           amenities: Array.isArray(cp.amenities) ? cp.amenities : [],
           featuredImage: cp.featured_image || '',
@@ -318,13 +327,67 @@ export const StorageService = {
     }
   },
 
-  // Agents
+  // Agents / Corretores
   getAgents(): Agent[] {
     return getLocal<Agent[]>(STORAGE_KEYS.AGENTS, SEED_AGENTS);
   },
 
   getAgentById(id: string): Agent | undefined {
     return this.getAgents().find(a => a.id === id);
+  },
+
+  async saveAgent(agent: Agent): Promise<void> {
+    const agents = this.getAgents();
+    const existingIndex = agents.findIndex(a => a.id === agent.id);
+    if (existingIndex >= 0) {
+      agents[existingIndex] = { ...agent };
+    } else {
+      agents.unshift({ ...agent });
+    }
+    setLocal(STORAGE_KEYS.AGENTS, agents);
+
+    if (supabase) {
+      try {
+        const { error } = await supabase.from('agents').upsert({
+          id: agent.id,
+          tenant_id: agent.tenantId || 't1111111-1111-1111-1111-111111111111',
+          name: agent.name,
+          email: agent.email,
+          phone: agent.phone,
+          role: agent.role,
+          creci: agent.creci || null,
+          avatar: agent.avatar,
+          bio: agent.bio || '',
+          social_links: agent.socialLinks || {},
+          is_active: agent.isActive !== false
+        });
+        if (error) console.warn('Supabase agent write error:', error.message);
+      } catch (err) {
+        console.warn('Supabase agent write exception:', err);
+      }
+    }
+  },
+
+  async deleteAgent(id: string): Promise<void> {
+    const agents = this.getAgents();
+    const filtered = agents.filter(a => a.id !== id);
+    setLocal(STORAGE_KEYS.AGENTS, filtered);
+
+    if (supabase) {
+      try {
+        await supabase.from('agents').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Supabase agent delete error:', err);
+      }
+    }
+  },
+
+  async toggleAgentStatus(id: string): Promise<void> {
+    const agent = this.getAgentById(id);
+    if (agent) {
+      const updated = { ...agent, isActive: agent.isActive === false ? true : false };
+      await this.saveAgent(updated);
+    }
   },
 
   // Schedules

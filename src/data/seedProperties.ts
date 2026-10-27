@@ -5,55 +5,63 @@ export const SEED_AGENTS: Agent[] = [
     id: 'a1111111-1111-1111-1111-111111111111',
     name: 'Alexandra Vance',
     email: 'alexandra.vance@auraestates.com',
-    phone: '+1 (310) 849-2201',
+    phone: '+55 (11) 98849-2201',
     role: 'Senior Luxury Specialist & Partner',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
-    bio: 'With over 12 years of luxury residential expertise across Bel-Air and Beverly Hills, Alexandra pairs high discretion with curated bespoke advisory.'
+    bio: 'Mais de 12 anos de experiência em intermediação de propriedades de alto padrão e condomínios fechados.'
   },
   {
     id: 'a2222222-2222-2222-2222-222222222222',
     name: 'Julian Montgomery',
     email: 'julian.m@auraestates.com',
-    phone: '+1 (212) 650-8840',
+    phone: '+55 (11) 9650-8840',
     role: 'Principal Architectural Advisor',
     avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80',
-    bio: 'Former architectural designer specializing in Manhattan penthouses, historic brownstones, and waterfront modern estates.'
+    bio: 'Especialista em coberturas, lofts contemporâneos e consultoria de investimentos imobiliários.'
   }
 ];
 
 export const SEED_PROPERTIES: Property[] = [
   {
     id: 'p1111111-1111-1111-1111-111111111111',
-    title: 'The Bel-Air Skyline Villa',
-    slug: 'the-bel-air-skyline-villa',
-    description: 'An architectural tour de force commanding uncompromised panoramic ocean and city views. Designed with seamless indoor-outdoor flow, a 60-foot zero-edge infinity pool, temperature-regulated wine gallery, and state-of-the-art Lutron smart automation.',
+    code: 'CS1042',
+    title: 'The Skyline Villa & Spa Privativo',
+    slug: 'the-skyline-villa-spa-privativo',
+    description: 'Mansão contemporânea com vista panorâmica definitiva. Integração total entre os ambientes, piscina com borda infinita de 18 metros, adega climatizada e automação residencial completa.',
     price: 4250000,
+    rentalPrice: 18000,
+    condoFee: 2400,
+    iptuFee: 950,
     propertyType: 'villa',
-    listingType: 'for_sale',
+    listingType: 'both',
     status: 'active',
     location: {
-      address: '10842 Bellagio Road',
-      city: 'Bel-Air',
-      state: 'CA',
-      zipCode: '90077',
-      lat: 34.0837,
-      lng: -118.4447
+      address: 'Rua das Magnólias, 108',
+      number: '108',
+      neighborhood: 'Morumbi Nobre',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '05678-000',
+      lat: -23.5987,
+      lng: -46.7147
     },
     specs: {
       bedrooms: 5,
+      suites: 4,
       bathrooms: 6,
+      areaSqM: 636,
       areaSqFt: 6850,
       yearBuilt: 2023,
-      garageSpaces: 3
+      garageSpaces: 4
     },
     amenities: [
-      'Infinity Pool',
-      'Wine Cellar',
-      'Smart Home Automation',
-      'Private Cinema',
-      'Panoramic Ocean View',
-      'Chef Kitchen',
-      'Spa & Sauna'
+      'Piscina com Borda Infinita',
+      'Adega Climatizada',
+      'Automação Residencial',
+      'Cinema Privativo',
+      'Vista Panorâmica',
+      'Espaço Gourmet',
+      'Sauna Úmida'
     ],
     featuredImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -68,35 +76,43 @@ export const SEED_PROPERTIES: Property[] = [
   },
   {
     id: 'p2222222-2222-2222-2222-222222222222',
-    title: 'Tribeca Light Duplex Penthouse',
-    slug: 'tribeca-light-duplex-penthouse',
-    description: 'Suspended high above Tribeca cobblestone streets, this dramatic duplex penthouse features 22-foot double-height ceilings, private keyed elevator access, custom Boffi kitchen, and a private 1,200 sq ft wrap-around rooftop terrace.',
+    code: 'CB2088',
+    title: 'Cobertura Duplex com Terraço Panorâmico',
+    slug: 'cobertura-duplex-terraco-panoramico',
+    description: 'Espetacular cobertura duplex com pé-direito duplo de 6 metros, elevador privativo com biometria, cozinha italiana Boffi planejada e amplo terraço gourmet com jacuzzi.',
     price: 3800000,
+    rentalPrice: 22000,
+    condoFee: 3100,
+    iptuFee: 1200,
     propertyType: 'penthouse',
-    listingType: 'for_sale',
+    listingType: 'both',
     status: 'active',
     location: {
-      address: '68 Franklin Street',
-      city: 'Tribeca',
-      state: 'NY',
-      zipCode: '10013',
-      lat: 40.7183,
-      lng: -74.0048
+      address: 'Rua Haddock Lobo, 1400',
+      number: '1400',
+      neighborhood: 'Jardins',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01414-002',
+      lat: -23.5615,
+      lng: -46.6631
     },
     specs: {
       bedrooms: 3,
-      bathrooms: 3.5,
+      suites: 3,
+      bathrooms: 4,
+      areaSqM: 380,
       areaSqFt: 4100,
       yearBuilt: 2022,
-      garageSpaces: 1
+      garageSpaces: 3
     },
     amenities: [
-      'Private Rooftop Terrace',
-      'Doorman 24/7',
-      'Fireplace',
-      'Private Keyed Elevator',
-      'Boffi Italian Kitchen',
-      'Wine Display'
+      'Terraço Gourmet com Jacuzzi',
+      'Portaria 24h Blindada',
+      'Lareira Ecológica',
+      'Elevador com Biometria',
+      'Cozinha Italiana Boffi',
+      'Adega para 180 Garrafas'
     ],
     featuredImage: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -110,35 +126,43 @@ export const SEED_PROPERTIES: Property[] = [
   },
   {
     id: 'p3333333-3333-3333-3333-333333333333',
-    title: 'The Modernist Beverly Hills Residence',
-    slug: 'the-modernist-beverly-hills-residence',
-    description: 'A serene architectural sanctuary with Japanese-inspired courtyard gardens, floor-to-ceiling sliding glass, limestone flooring, and an ultra-private primary wing with an outdoor terrazzo soaking tub.',
+    code: 'CS3050',
+    title: 'Casa Minimalista Contemporânea',
+    slug: 'casa-minimalista-contemporanea',
+    description: 'Projeto arquitetônico premiado com pátio zen central, portas de correr piso-teto em alumínio minimalista, pisos em travertino e suíte master com banheira externa esculpida.',
     price: 2950000,
+    rentalPrice: 0,
+    condoFee: 1600,
+    iptuFee: 780,
     propertyType: 'house',
     listingType: 'for_sale',
     status: 'active',
     location: {
-      address: '9410 Loma Vista Drive',
-      city: 'Beverly Hills',
-      state: 'CA',
-      zipCode: '90210',
-      lat: 34.0736,
-      lng: -118.4004
+      address: 'Alameda dos Ipês, 450',
+      number: '450',
+      neighborhood: 'Granja Viana',
+      city: 'Cotia',
+      state: 'SP',
+      zipCode: '06700-150',
+      lat: -23.5855,
+      lng: -46.8402
     },
     specs: {
       bedrooms: 4,
-      bathrooms: 4.5,
+      suites: 4,
+      bathrooms: 5,
+      areaSqM: 483,
       areaSqFt: 5200,
       yearBuilt: 2021,
-      garageSpaces: 2
+      garageSpaces: 4
     },
     amenities: [
-      'Zen Courtyard',
-      'Outdoor Soaking Tub',
-      'Guest House',
-      'Solar Energy System',
-      'Gourmet Island Kitchen',
-      'Security System'
+      'Pátio Zen Central',
+      'Banheira Esculpida',
+      'Casa de Hóspedes',
+      'Energia Solar Fotovoltaica',
+      'Cozinha com Ilha em Quartzo',
+      'Sistema de Monitoramento 4K'
     ],
     featuredImage: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -152,34 +176,42 @@ export const SEED_PROPERTIES: Property[] = [
   },
   {
     id: 'p4444444-4444-4444-4444-444444444444',
-    title: 'Downtown Miami Glass Waterfront Residence',
-    slug: 'downtown-miami-waterfront-residence',
-    description: 'Immerse in azure Biscayne Bay views from this elevated modern condo featuring a wide cantilevered terrace, marble island, subzero appliances, private marina slip access, and 5-star concierge amenities.',
+    code: 'AP4010',
+    title: 'Apartamento de Alto Padrão no Itaim Bibi',
+    slug: 'apartamento-alto-padrao-itaim-bibi',
+    description: 'Imóvel mobiliado e decorado por arquiteto de renome. Living integrado para 3 ambientes, varanda envidraçada com churrasqueira gourmet e acabamento impecável em mármore.',
     price: 1850000,
+    rentalPrice: 9500,
+    condoFee: 1450,
+    iptuFee: 420,
     propertyType: 'apartment',
-    listingType: 'for_sale',
+    listingType: 'for_rent',
     status: 'active',
     location: {
-      address: '1000 Brickell Plaza',
-      city: 'Miami',
-      state: 'FL',
-      zipCode: '33131',
-      lat: 25.7617,
-      lng: -80.1918
+      address: 'Rua Joaquim Floriano, 800',
+      number: '800',
+      neighborhood: 'Itaim Bibi',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '04534-003',
+      lat: -23.5842,
+      lng: -46.6781
     },
     specs: {
       bedrooms: 2,
-      bathrooms: 2.5,
+      suites: 2,
+      bathrooms: 3,
+      areaSqM: 130,
       areaSqFt: 2250,
       yearBuilt: 2023,
       garageSpaces: 2
     },
     amenities: [
-      'Marina Access',
-      'Bay Views',
-      'Rooftop Lap Pool',
-      'Valet Parking',
-      'Fitness & Wellness Center'
+      'Piscina Aquecida com Raia de 25m',
+      'Varanda com Churrasqueira',
+      'Academia Reebok Fitness',
+      'Valet Parking para Visitantes',
+      'Fechadura Biométrica'
     ],
     featuredImage: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -192,34 +224,42 @@ export const SEED_PROPERTIES: Property[] = [
   },
   {
     id: 'p5555555-5555-5555-5555-555555555555',
-    title: 'West Village Historic Brick Townhouse',
-    slug: 'west-village-historic-townhouse',
-    description: 'A landmark four-story red brick townhouse meticulously reconstructed with herringbone white oak floors, wood-burning fireplaces, custom steel casement garden doors, and a lush private landscaped garden.',
+    code: 'TH5020',
+    title: 'Townhouse Exclusiva em Vila Charmosa',
+    slug: 'townhouse-exclusiva-vila-charmosa',
+    description: 'Residência sofisticada em vila fechada com segurança privada. Quatro pavimentos com piso em peroba-do-campo, lareiras a lenha e jardim privativo de inverno.',
     price: 5400000,
+    rentalPrice: 28000,
+    condoFee: 850,
+    iptuFee: 1100,
     propertyType: 'townhouse',
-    listingType: 'for_sale',
+    listingType: 'both',
     status: 'active',
     location: {
-      address: '28 Perry Street',
-      city: 'West Village',
-      state: 'NY',
-      zipCode: '10014',
-      lat: 40.7359,
-      lng: -74.0028
+      address: 'Rua Bela Cintra, 2100',
+      number: '2100',
+      neighborhood: 'Cerqueira César',
+      city: 'São Paulo',
+      state: 'SP',
+      zipCode: '01415-002',
+      lat: -23.5594,
+      lng: -46.6645
     },
     specs: {
       bedrooms: 4,
+      suites: 3,
       bathrooms: 4,
+      areaSqM: 427,
       areaSqFt: 4600,
       yearBuilt: 2020,
-      garageSpaces: 0
+      garageSpaces: 3
     },
     amenities: [
-      'Private Landscaped Garden',
-      'Wood-Burning Fireplaces',
-      'Wine Cellar',
-      'Custom Millwork',
-      'Primary Suite Terrace'
+      'Jardim de Inverno Privativo',
+      'Lareira a Lenha',
+      'Adega Subterrânea',
+      'Marcenaria Artesanal',
+      'Rooftop com Vista Urbana'
     ],
     featuredImage: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
     gallery: [
@@ -235,7 +275,7 @@ export const SEED_PROPERTIES: Property[] = [
 export const SEED_SCHEDULES: AvailabilitySchedule[] = SEED_PROPERTIES.map(p => ({
   id: `sched-${p.id}`,
   propertyId: p.id,
-  daysOfWeek: [1, 2, 3, 4, 5, 6], // Mon - Sat
+  daysOfWeek: [1, 2, 3, 4, 5, 6], // Seg - Sáb
   startHour: 9,
   endHour: 18,
   slotDurationMinutes: 45,

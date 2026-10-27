@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
-import { Building2, Calendar, Clock, DollarSign, Users, Eye, Database, RefreshCw, ExternalLink } from 'lucide-react';
-import { Property, BookingRequest } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Building2, Calendar, Clock, DollarSign, Users, Eye, Database, RefreshCw, ExternalLink, MessageSquare } from 'lucide-react';
+import { Property, BookingRequest, Lead } from '../types';
 import { StorageService } from '../services/storageService';
+import { LeadService } from '../services/leadService';
 import { formatCurrency } from '../utils/formatters';
 import { PropertyInventoryTable } from '../components/admin/PropertyInventoryTable';
 import { BookingTable } from '../components/admin/BookingTable';
 import { AvailabilityManager } from '../components/admin/AvailabilityManager';
+import { LeadManagementTable } from '../components/admin/LeadManagementTable';
+import { AgentManagementTable } from '../components/admin/AgentManagementTable';
 
 interface AdminDashboardPageProps {
   onPreviewProperty: (property: Property) => void;
@@ -16,7 +19,12 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
   onPreviewProperty,
   onRefresh
 }) => {
-  const [activeTab, setActiveTab] = useState<'listings' | 'bookings' | 'availability'>('bookings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'bookings' | 'availability' | 'leads' | 'agents'>('agents');
+  const [leads, setLeads] = useState<Lead[]>([]);
+
+  useEffect(() => {
+    LeadService.getLeads().then(setLeads);
+  }, []);
 
   const properties = StorageService.getProperties();
   const bookings = StorageService.getBookings();
@@ -26,6 +34,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
   const activeListings = properties.filter(p => p.status === 'active');
   const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
   const totalCatalogValue = activeListings.reduce((sum, p) => sum + p.price, 0);
+  const newLeadsCount = leads.filter(l => l.status === 'new').length;
 
   const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -187,13 +196,25 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '20px' }}>
+        <div className="glass-panel" style={{ padding: '20px', cursor: 'pointer' }} onClick={() => setActiveTab('agents')}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Assigned Partners</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corretores & Equipe</span>
             <Users size={18} color="var(--gold-primary)" />
           </div>
           <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#FFF' }}>
-            {agents.length} <span style={{ fontSize: '0.9rem', color: 'var(--text-dim)', fontWeight: 400 }}>advisors</span>
+            {agents.length} <span style={{ fontSize: '0.9rem', color: 'var(--text-dim)', fontWeight: 400 }}>corretores</span>
+          </div>
+        </div>
+
+        <div className="glass-panel" style={{ padding: '20px', cursor: 'pointer' }} onClick={() => setActiveTab('leads')}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Leads & Interessados</span>
+            <MessageSquare size={18} color="var(--gold-primary)" />
+          </div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#FFF' }}>
+            {leads.length} <span style={{ fontSize: '0.9rem', color: newLeadsCount > 0 ? '#FBBF24' : 'var(--text-dim)', fontWeight: 600 }}>
+              {newLeadsCount > 0 ? `(${newLeadsCount} novos)` : 'leads'}
+            </span>
           </div>
         </div>
       </div>
@@ -208,11 +229,32 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
         overflowX: 'auto'
       }}>
         <button
+          onClick={() => setActiveTab('leads')}
+          className={`btn ${activeTab === 'leads' ? 'btn-gold' : 'btn-outline'}`}
+        >
+          <MessageSquare size={16} />
+          <span>Leads & CRM ({leads.length})</span>
+          {newLeadsCount > 0 && (
+            <span style={{
+              background: '#F59E0B',
+              color: '#041E11',
+              borderRadius: '999px',
+              padding: '1px 7px',
+              fontSize: '0.7rem',
+              fontWeight: 800,
+              marginLeft: '4px'
+            }}>
+              {newLeadsCount} novos
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => setActiveTab('bookings')}
           className={`btn ${activeTab === 'bookings' ? 'btn-gold' : 'btn-outline'}`}
         >
           <Calendar size={16} />
-          <span>Viewing Requests & Appointments ({bookings.length})</span>
+          <span>Visitas Agendadas ({bookings.length})</span>
         </button>
 
         <button
@@ -220,7 +262,15 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
           className={`btn ${activeTab === 'listings' ? 'btn-gold' : 'btn-outline'}`}
         >
           <Building2 size={16} />
-          <span>Property Inventory Management ({properties.length})</span>
+          <span>Gestão de Imóveis ({properties.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('agents')}
+          className={`btn ${activeTab === 'agents' ? 'btn-gold' : 'btn-outline'}`}
+        >
+          <Users size={16} />
+          <span>Corretores & Equipe ({agents.length})</span>
         </button>
 
         <button
@@ -228,11 +278,26 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
           className={`btn ${activeTab === 'availability' ? 'btn-gold' : 'btn-outline'}`}
         >
           <Clock size={16} />
-          <span>Availability & Blackout Calendar</span>
+          <span>Disponibilidade & Bloqueios</span>
         </button>
       </div>
 
       {/* Tab Panels */}
+      {activeTab === 'agents' && (
+        <AgentManagementTable
+          agents={agents}
+          properties={properties}
+          onRefresh={onRefresh}
+        />
+      )}
+
+      {activeTab === 'leads' && (
+        <LeadManagementTable onRefresh={() => {
+          LeadService.getLeads().then(setLeads);
+          onRefresh();
+        }} />
+      )}
+
       {activeTab === 'bookings' && (
         <BookingTable bookings={bookings} onRefresh={onRefresh} />
       )}

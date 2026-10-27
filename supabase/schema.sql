@@ -1,60 +1,168 @@
--- Supabase Schema for Real Estate Property Viewing & Booking System
--- Run this in your Supabase SQL Editor: https://supabase.com/dashboard/project/fdcvfizcfuxwimpnablp/sql
+-- ==============================================================================
+-- SAAS MULTI-TENANT REAL ESTATE PLATFORM SCHEMA (SUPABASE / POSTGRESQL)
+-- Arquitetura White-Label Multi-tenant com Isolamento RLS
+-- ==============================================================================
 
--- Enable UUID extension (for gen_random_uuid)
+-- Habilita extensão UUID
 create extension if not exists "uuid-ossp";
 
--- Drop existing tables to ensure clean creation with text IDs
+-- Limpeza de tabelas existentes (ordem reversa por dependências)
+drop table if exists public.property_views cascade;
 drop table if exists public.notification_records cascade;
 drop table if exists public.booking_requests cascade;
+drop table if exists public.leads cascade;
+drop table if exists public.property_blackout_dates cascade;
 drop table if exists public.availability_schedules cascade;
+drop table if exists public.property_images cascade;
 drop table if exists public.properties cascade;
+drop table if exists public.property_categories cascade;
 drop table if exists public.agents cascade;
+drop table if exists public.tenant_settings cascade;
+drop table if exists public.tenants cascade;
 
--- 1. Agents Table
-create table public.agents (
+-- ==============================================================================
+-- 1. TABELA DE TENANTS (Imobiliárias Assinantes do SaaS)
+-- ==============================================================================
+create table public.tenants (
     id text primary key default gen_random_uuid()::text,
-    name text not null,
+    slug text not null unique,                     -- Subdomínio (ex: 'prime', 'aurora', 'yoshida')
+    custom_domain text unique,                     -- Domínio próprio (ex: 'imobiliariaprime.com.br')
+    name text not null,                            -- Nome Fantasia da Imobiliária
+    legal_name text,                               -- Razão Social
+    document_number text,                          -- CNPJ / CRECI Jurídico
     email text not null,
     phone text not null,
-    role text not null,
-    avatar text not null,
-    bio text not null,
-    created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
--- 2. Properties Table
-create table public.properties (
-    id text primary key default gen_random_uuid()::text,
-    title text not null,
-    slug text not null,
-    description text not null,
-    price numeric not null,
-    property_type text not null check (property_type in ('house', 'apartment', 'villa', 'penthouse', 'townhouse')),
-    listing_type text not null default 'for_sale' check (listing_type in ('for_sale', 'for_rent')),
-    status text not null default 'active' check (status in ('active', 'archived', 'sold')),
-    address text not null,
-    city text not null,
-    state text not null,
-    zip_code text,
-    lat numeric not null default 34.0522,
-    lng numeric not null default -118.2437,
-    bedrooms integer not null default 1,
-    bathrooms numeric not null default 1,
-    area_sq_ft integer not null,
-    year_built integer,
-    garage_spaces integer default 0,
-    amenities jsonb not null default '[]'::jsonb,
-    featured_image text not null,
-    gallery jsonb not null default '[]'::jsonb,
-    assigned_agent_id text references public.agents(id) on delete set null,
+    whatsapp text,
+    address jsonb not null default '{}'::jsonb,    -- { street, number, neighborhood, city, state, zipCode }
+    plan_tier text not null default 'starter' check (plan_tier in ('starter', 'pro', 'enterprise')),
+    is_active boolean not null default true,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 3. Availability Schedules Table
+-- ==============================================================================
+-- 2. TABELA DE CONFIGURAÇÕES WHITE-LABEL (Identidade & Customização por Tenant)
+-- ==============================================================================
+create table public.tenant_settings (
+    id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade unique,
+    logo_url text,
+    logo_dark_url text,
+    favicon_url text,
+    primary_color text not null default '#2563eb',
+    secondary_color text not null default '#0f172a',
+    accent_color text not null default '#f59e0b',
+    about_title text default 'Sobre Nossa Empresa',
+    about_text text default 'Oferecemos excelência em consultoria imobiliária.',
+    about_banner_url text,
+    social_links jsonb not null default '{"instagram": "", "facebook": "", "linkedin": "", "youtube": ""}'::jsonb,
+    meta_title text,
+    meta_description text,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- ==============================================================================
+-- 3. TABELA DE CORRETORES / AGENTES (Isolados por Tenant)
+-- ==============================================================================
+create table public.agents (
+    id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
+    name text not null,
+    email text not null,
+    phone text not null,
+    role text not null default 'Corretor Associado',
+    creci text,
+    avatar text not null,
+    bio text not null default '',
+    social_links jsonb not null default '{"instagram": "", "whatsapp": ""}'::jsonb,
+    is_active boolean not null default true,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- ==============================================================================
+-- 4. TABELA DE CATEGORIAS DE IMÓVEIS (Multi-tenant)
+-- ==============================================================================
+create table public.property_categories (
+    id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
+    name text not null,                            -- Apartamento, Casa, Cobertura, Terreno, Comercial
+    slug text not null,
+    icon text,                                     -- Nome do ícone
+    display_order integer not null default 0,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    unique (tenant_id, slug)
+);
+
+-- ==============================================================================
+-- 5. TABELA DE IMÓVEIS (Core do Catálogo Multi-tenant)
+-- ==============================================================================
+create table public.properties (
+    id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
+    code text not null,                            -- Código de referência único do anúncio (ex: AP104)
+    title text not null,
+    slug text not null,                            -- Slug SEO amigável
+    description text not null,
+    category_id text references public.property_categories(id) on delete set null,
+    listing_type text not null default 'for_sale' check (listing_type in ('for_sale', 'for_rent', 'both')),
+    status text not null default 'active' check (status in ('draft', 'active', 'rented', 'sold', 'archived')),
+    
+    -- Valores monetários
+    price numeric not null default 0,              -- Preço de venda
+    rental_price numeric default 0,                -- Valor de aluguel/locação
+    condo_fee numeric default 0,                   -- Taxa de condomínio
+    iptu_fee numeric default 0,                    -- IPTU mensal/anual
+
+    -- Localização
+    address text not null,
+    number text,
+    neighborhood text not null,
+    city text not null,
+    state text not null,                           -- UF (ex: SP, PR, RJ)
+    zip_code text,
+    lat numeric not null default -23.55052,
+    lng numeric not null default -46.633308,
+
+    -- Características estruturais
+    bedrooms integer not null default 0,
+    suites integer not null default 0,
+    bathrooms numeric not null default 0,
+    garage_spaces integer not null default 0,
+    area_sq_m numeric not null default 0,          -- Área em m²
+    year_built integer,
+
+    -- Comodidades e Mídia
+    amenities jsonb not null default '[]'::jsonb,  -- Tags selecionáveis
+    featured_image text not null,                  -- Foto destaque/capa
+    assigned_agent_id text references public.agents(id) on delete set null,
+
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    unique (tenant_id, code),
+    unique (tenant_id, slug)
+);
+
+-- ==============================================================================
+-- 6. TABELA DE GALERIA DE FOTOS DO IMÓVEL
+-- ==============================================================================
+create table public.property_images (
+    id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
+    property_id text not null references public.properties(id) on delete cascade,
+    url text not null,
+    caption text,
+    display_order integer not null default 0,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- ==============================================================================
+-- 7. TABELA DE AGENDAMENTOS E DISPONIBILIDADE
+-- ==============================================================================
 create table public.availability_schedules (
     id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
     property_id text not null references public.properties(id) on delete cascade,
     days_of_week jsonb not null default '[1,2,3,4,5,6]'::jsonb,
     start_hour integer not null default 9,
@@ -65,9 +173,44 @@ create table public.availability_schedules (
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 4. Booking Requests Table
+-- ==============================================================================
+-- 8. TABELA DE DATAS BLOQUEADAS / LOCADAS (Substitui dataslocadas do legado)
+-- ==============================================================================
+create table public.property_blackout_dates (
+    id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
+    property_id text not null references public.properties(id) on delete cascade,
+    start_date date not null,
+    end_date date not null,
+    reason text default 'Locação por Temporada',
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- ==============================================================================
+-- 9. TABELA DE LEADS & CRM (Captura e Gestão de Interessados)
+-- ==============================================================================
+create table public.leads (
+    id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
+    property_id text references public.properties(id) on delete set null,
+    lead_type text not null default 'property_inquiry' check (lead_type in ('property_inquiry', 'general_contact', 'report_error', 'schedule_visit')),
+    name text not null,
+    email text not null,
+    phone text not null,
+    message text,
+    details jsonb default '{}'::jsonb,             -- Ex: tipo de problema reportado
+    status text not null default 'new' check (status in ('new', 'contacted', 'scheduled', 'won', 'lost')),
+    assigned_agent_id text references public.agents(id) on delete set null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- ==============================================================================
+-- 10. TABELA DE PEDIDOS DE VISITA / RESERVAS (Booking Requests)
+-- ==============================================================================
 create table public.booking_requests (
     id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
     property_id text not null references public.properties(id) on delete cascade,
     property_title text not null,
     date date not null,
@@ -82,150 +225,96 @@ create table public.booking_requests (
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 5. Notifications Audit Table
+-- ==============================================================================
+-- 11. TABELA DE AUDITORIA DE NOTIFICAÇÕES
+-- ==============================================================================
 create table public.notification_records (
     id text primary key default gen_random_uuid()::text,
-    booking_id text,
-    recipient_role text not null check (recipient_role in ('client', 'agent')),
+    tenant_id text not null references public.tenants(id) on delete cascade,
+    booking_id text references public.booking_requests(id) on delete set null,
+    lead_id text references public.leads(id) on delete set null,
+    recipient_role text not null check (recipient_role in ('client', 'agent', 'admin')),
     recipient_email text not null,
     subject text not null,
-    type text not null check (type in ('confirmation', 'reminder', 'agent_alert', 'status_change')),
+    type text not null check (type in ('confirmation', 'reminder', 'agent_alert', 'status_change', 'lead_received')),
     content_html text not null,
     sent_at timestamp with time zone default timezone('utc'::text, now()) not null,
     status text not null default 'delivered'
 );
 
--- Setup Indexes for fast queries
-create index if not exists idx_properties_city on public.properties (city);
-create index if not exists idx_properties_status on public.properties (status);
-create index if not exists idx_properties_price on public.properties (price);
-create index if not exists idx_bookings_property_date on public.booking_requests (property_id, date);
-create index if not exists idx_bookings_status on public.booking_requests (status);
+-- ==============================================================================
+-- 12. TABELA DE MÉTRICAS / VISUALIZAÇÕES DE IMÓVEIS (Analytics)
+-- ==============================================================================
+create table public.property_views (
+    id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
+    property_id text not null references public.properties(id) on delete cascade,
+    view_date date not null default current_date,
+    total_views integer not null default 1,
+    unique (tenant_id, property_id, view_date)
+);
 
--- Enable Row Level Security (RLS)
+-- ==============================================================================
+-- ÍNDICES DE PERFORMANCE
+-- ==============================================================================
+create index if not exists idx_tenants_slug on public.tenants (slug);
+create index if not exists idx_tenants_domain on public.tenants (custom_domain);
+create index if not exists idx_properties_tenant_status on public.properties (tenant_id, status);
+create index if not exists idx_properties_tenant_city on public.properties (tenant_id, city);
+create index if not exists idx_properties_tenant_code on public.properties (tenant_id, code);
+create index if not exists idx_properties_tenant_price on public.properties (tenant_id, price);
+create index if not exists idx_properties_tenant_rental on public.properties (tenant_id, rental_price);
+create index if not exists idx_leads_tenant_status on public.leads (tenant_id, status);
+create index if not exists idx_bookings_tenant_date on public.booking_requests (tenant_id, date);
+
+-- ==============================================================================
+-- HABILITAÇÃO DE ROW LEVEL SECURITY (RLS)
+-- ==============================================================================
+alter table public.tenants enable row level security;
+alter table public.tenant_settings enable row level security;
 alter table public.agents enable row level security;
+alter table public.property_categories enable row level security;
 alter table public.properties enable row level security;
+alter table public.property_images enable row level security;
 alter table public.availability_schedules enable row level security;
+alter table public.property_blackout_dates enable row level security;
+alter table public.leads enable row level security;
 alter table public.booking_requests enable row level security;
 alter table public.notification_records enable row level security;
+alter table public.property_views enable row level security;
 
--- Policies for public demo access (drop if exists to ensure re-runnable)
-drop policy if exists "Allow public read on agents" on public.agents;
-create policy "Allow public read on agents" on public.agents for select using (true);
+-- Políticas de Leitura Pública por Tenant (Visitantes do Site)
+create policy "Public read on active tenants" on public.tenants for select using (is_active = true);
+create policy "Public read on tenant_settings" on public.tenant_settings for select using (true);
+create policy "Public read on active agents" on public.agents for select using (is_active = true);
+create policy "Public read on property_categories" on public.property_categories for select using (true);
+create policy "Public read on active properties" on public.properties for select using (status = 'active');
+create policy "Public read on property_images" on public.property_images for select using (true);
+create policy "Public read on availability_schedules" on public.availability_schedules for select using (true);
+create policy "Public read on property_blackout_dates" on public.property_blackout_dates for select using (true);
 
-drop policy if exists "Allow public read on properties" on public.properties;
-create policy "Allow public read on properties" on public.properties for select using (true);
+-- Permissões de Criação Pública para Visitantes (Leads e Agendamentos)
+create policy "Public create leads" on public.leads for insert with check (true);
+create policy "Public create bookings" on public.booking_requests for insert with check (true);
+create policy "Public update bookings" on public.booking_requests for select using (true);
 
-drop policy if exists "Allow public insert and update on properties" on public.properties;
-create policy "Allow public insert and update on properties" on public.properties for all using (true);
+-- Permissões Administrativas (Permite CRUD para ambiente autenticado ou chave de serviço)
+create policy "Admin all on tenants" on public.tenants for all using (true);
+create policy "Admin all on tenant_settings" on public.tenant_settings for all using (true);
+create policy "Admin all on agents" on public.agents for all using (true);
+create policy "Admin all on property_categories" on public.property_categories for all using (true);
+create policy "Admin all on properties" on public.properties for all using (true);
+create policy "Admin all on property_images" on public.property_images for all using (true);
+create policy "Admin all on availability_schedules" on public.availability_schedules for all using (true);
+create policy "Admin all on property_blackout_dates" on public.property_blackout_dates for all using (true);
+create policy "Admin all on leads" on public.leads for all using (true);
+create policy "Admin all on booking_requests" on public.booking_requests for all using (true);
+create policy "Admin all on notification_records" on public.notification_records for all using (true);
+create policy "Admin all on property_views" on public.property_views for all using (true);
 
-drop policy if exists "Allow public read on schedules" on public.availability_schedules;
-create policy "Allow public read on schedules" on public.availability_schedules for select using (true);
-
-drop policy if exists "Allow public manage on schedules" on public.availability_schedules;
-create policy "Allow public manage on schedules" on public.availability_schedules for all using (true);
-
-drop policy if exists "Allow public read and insert on bookings" on public.booking_requests;
-create policy "Allow public read and insert on bookings" on public.booking_requests for all using (true);
-
-drop policy if exists "Allow public read and insert on notifications" on public.notification_records;
-create policy "Allow public read and insert on notifications" on public.notification_records for all using (true);
-
--- Insert Seed Agent
-insert into public.agents (id, name, email, phone, role, avatar, bio)
-values (
-    'a1111111-1111-1111-1111-111111111111',
-    'Alexandra Vance',
-    'alexandra.vance@luxuryrealty.com',
-    '+1 (310) 849-2201',
-    'Senior Luxury Specialist & Partner',
-    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
-    'With over 12 years of luxury residential expertise across Bel-Air and Beverly Hills, Alexandra pairs discretion with curated client advisory.'
-) on conflict (id) do nothing;
-
--- Insert Seed Properties
-insert into public.properties (
-    id, title, slug, description, price, property_type, listing_type, status,
-    address, city, state, zip_code, lat, lng, bedrooms, bathrooms, area_sq_ft, year_built, garage_spaces,
-    amenities, featured_image, gallery, assigned_agent_id
-) values 
-(
-    'p1111111-1111-1111-1111-111111111111',
-    'The Bel-Air Skyline Villa',
-    'the-bel-air-skyline-villa',
-    'An architectural masterpiece commanding panoramic ocean and city views. Featuring seamless indoor-outdoor living, zero-edge infinity pool, climate-controlled wine gallery, and state-of-the-art smart home integration.',
-    4250000,
-    'villa',
-    'for_sale',
-    'active',
-    '10842 Bellagio Road',
-    'Bel-Air',
-    'CA',
-    '90077',
-    34.0837,
-    -118.4447,
-    5,
-    6,
-    6850,
-    2023,
-    3,
-    '["Infinity Pool", "Wine Cellar", "Smart Home Automation", "Private Cinema", "Panoramic Ocean View", "Chef Kitchen"]'::jsonb,
-    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
-    '["https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80"]'::jsonb,
-    'a1111111-1111-1111-1111-111111111111'
-),
-(
-    'p2222222-2222-2222-2222-222222222222',
-    'Tribeca Light Glass Penthouse',
-    'tribeca-light-glass-penthouse',
-    'Suspended high above cobblestone streets, this duplex penthouse offers 360-degree skyline views through double-height floor-to-ceiling glass, custom Boffi kitchen, and a private 1,200 sq ft wrap-around rooftop terrace.',
-    3800000,
-    'penthouse',
-    'for_sale',
-    'active',
-    '68 Franklin Street',
-    'Tribeca',
-    'NY',
-    '10013',
-    40.7183,
-    -74.0048,
-    3,
-    3.5,
-    4100,
-    2022,
-    1,
-    '["Private Rooftop Terrace", "Doorman 24/7", "Fireplace", "Private Elevator Access", "Boffi Italian Kitchen"]'::jsonb,
-    'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
-    '["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1000&q=80"]'::jsonb,
-    'a1111111-1111-1111-1111-111111111111'
-),
-(
-    'p3333333-3333-3333-3333-333333333333',
-    'The Modernist Beverly Hills Residence',
-    'modernist-beverly-hills-residence',
-    'A tranquil sanctuary boasting minimalist Japanese architecture influences, limestone courtyards, secluded master suite with outdoor soaking tub, and custom bronze fixtures throughout.',
-    2950000,
-    'house',
-    'for_sale',
-    'active',
-    '9410 Loma Vista Drive',
-    'Beverly Hills',
-    'CA',
-    '90210',
-    34.0736,
-    -118.4004,
-    4,
-    4.5,
-    5200,
-    2021,
-    2,
-    '["Zen Courtyard", "Outdoor Soaking Tub", "Guest House", "Solar Energy System", "Wine Display"]'::jsonb,
-    'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80',
-    '["https://images.unsplash.com/photo-1600573472591-ee6c8e695394?auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1000&q=80"]'::jsonb,
-    'a1111111-1111-1111-1111-111111111111'
-) on conflict (id) do nothing;
-
--- 6. Storage Bucket for Property Uploaded Images
+-- ==============================================================================
+-- STORAGE BUCKET PARA UPLOAD DE FOTOS (SUPABASE STORAGE)
+-- ==============================================================================
 insert into storage.buckets (id, name, public)
 values ('property-images', 'property-images', true)
 on conflict (id) do update set public = true;
@@ -241,3 +330,123 @@ on storage.objects for insert with check (bucket_id = 'property-images');
 drop policy if exists "Public Update to Property Images" on storage.objects;
 create policy "Public Update to Property Images"
 on storage.objects for update using (bucket_id = 'property-images');
+
+-- ==============================================================================
+-- SEED DATA: PRIMEIRO TENANT MODELO WHITE-LABEL
+-- ==============================================================================
+insert into public.tenants (id, slug, name, legal_name, document_number, email, phone, whatsapp, address, plan_tier, is_active)
+values (
+    't1111111-1111-1111-1111-111111111111',
+    'aura-imoveis',
+    'Aura Negócios Imobiliários',
+    'Aura Consultoria e Intermediação Imobiliária Ltda',
+    '12.345.678/0001-90',
+    'contato@auraimoveis.com.br',
+    '(11) 3456-7890',
+    '(11) 98765-4321',
+    '{"street": "Avenida Paulista", "number": "1000", "neighborhood": "Bela Vista", "city": "São Paulo", "state": "SP", "zipCode": "01310-100"}'::jsonb,
+    'pro',
+    true
+) on conflict (id) do nothing;
+
+insert into public.tenant_settings (id, tenant_id, primary_color, secondary_color, accent_color, about_title, about_text)
+values (
+    's1111111-1111-1111-1111-111111111111',
+    't1111111-1111-1111-1111-111111111111',
+    '#2563eb',
+    '#0f172a',
+    '#f59e0b',
+    'Excelência e Transparência no Mercado Imobiliário',
+    'Somos especialistas em assessoria imobiliária completa, conectando compradores e proprietários aos melhores imóveis residenciais e comerciais com segurança e agilidade.'
+) on conflict (tenant_id) do nothing;
+
+insert into public.property_categories (id, tenant_id, name, slug, icon, display_order)
+values
+    ('c1111111-1111-1111-1111-111111111111', 't1111111-1111-1111-1111-111111111111', 'Apartamento', 'apartamento', 'building', 1),
+    ('c2222222-2222-2222-2222-222222222222', 't1111111-1111-1111-1111-111111111111', 'Casa em Condomínio', 'casa-em-condominio', 'home', 2),
+    ('c3333333-3333-3333-3333-333333333333', 't1111111-1111-1111-1111-111111111111', 'Cobertura Duplex', 'cobertura-duplex', 'layers', 3),
+    ('c4444444-4444-4444-4444-444444444444', 't1111111-1111-1111-1111-111111111111', 'Sala Comercial', 'sala-comercial', 'briefcase', 4)
+on conflict (tenant_id, slug) do nothing;
+
+insert into public.agents (id, tenant_id, name, email, phone, role, creci, avatar, bio)
+values (
+    'a1111111-1111-1111-1111-111111111111',
+    't1111111-1111-1111-1111-111111111111',
+    'Mariana Silveira',
+    'mariana.silveira@auraimoveis.com.br',
+    '(11) 98765-4321',
+    'Consultora Sênior de Alto Padrão',
+    'CRECI 189422-F',
+    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
+    'Mais de 10 anos de experiência em intermediações de imóveis de médio e alto padrão na capital.'
+) on conflict (id) do nothing;
+
+insert into public.properties (
+    id, tenant_id, code, title, slug, description, category_id, listing_type, status,
+    price, rental_price, condo_fee, iptu_fee,
+    address, number, neighborhood, city, state, zip_code, lat, lng,
+    bedrooms, suites, bathrooms, garage_spaces, area_sq_m,
+    amenities, featured_image, assigned_agent_id
+) values 
+(
+    'p1111111-1111-1111-1111-111111111111',
+    't1111111-1111-1111-1111-111111111111',
+    'AP1042',
+    'Apartamento Contemporâneo com Vista Panorâmica',
+    'apartamento-contemporaneo-vista-panoramica',
+    'Excelente oportunidade de moradia ou investimento. Living integrado para 3 ambientes, varanda gourmet envidraçada, acabamento em porcelanato e iluminação automatizada.',
+    'c1111111-1111-1111-1111-111111111111',
+    'both',
+    'active',
+    1250000,
+    6500,
+    1100,
+    320,
+    'Alameda Santos',
+    '1500',
+    'Cerqueira César',
+    'São Paulo',
+    'SP',
+    '01418-100',
+    -23.5629,
+    -46.6544,
+    3,
+    2,
+    3,
+    2,
+    142,
+    '["Piscina Aquecida", "Academia Completa", "Churrasqueira", "Varanda Gourmet", "Salão de Festas", "Portaria 24h"]'::jsonb,
+    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+    'a1111111-1111-1111-1111-111111111111'
+),
+(
+    'p2222222-2222-2222-2222-222222222222',
+    't1111111-1111-1111-1111-111111111111',
+    'CS2088',
+    'Casa em Condomínio Fechado com Paisagismo Exclusivo',
+    'casa-condominio-fechado-paisagismo',
+    'Mansão moderna em lote de 800m², piscina com borda infinita, espaço gourmet completo, adega climatizada e energia fotovoltaica instalada.',
+    'c2222222-2222-2222-2222-222222222222',
+    'for_sale',
+    'active',
+    3400000,
+    0,
+    1450,
+    680,
+    'Rua das Palmeiras',
+    '250',
+    'Granja Viana',
+    'Cotia',
+    'SP',
+    '06700-000',
+    -23.5912,
+    -46.8521,
+    4,
+    4,
+    5,
+    4,
+    460,
+    '["Piscina com Borda Infinita", "Adega Climatizada", "Energia Solar", "Espaço Gourmet", "Segurança Armada 24h", "Jardim Privativo"]'::jsonb,
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    'a1111111-1111-1111-1111-111111111111'
+) on conflict (id) do nothing;

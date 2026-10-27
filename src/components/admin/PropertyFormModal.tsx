@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
   X, Building, DollarSign, MapPin, Bed, Bath, Maximize2,
-  Image, Check, Upload, Trash2, Star, Loader2, Compass
+  Image, Check, Upload, Trash2, Star, Loader2, Compass,
+  Hash, Tag, Layers, Car, CheckSquare, Plus
 } from 'lucide-react';
-import { Property, PropertyType } from '../../types';
+import { Property, PropertyType, ListingType, PropertyStatus } from '../../types';
 import { StorageService } from '../../services/storageService';
 import { uploadPropertyImage } from '../../services/imageUploadService';
 import { generateUUID } from '../../utils/formatters';
@@ -14,6 +15,24 @@ interface PropertyFormModalProps {
   onSaved: () => void;
 }
 
+const COMMON_AMENITIES = [
+  'Piscina',
+  'Churrasqueira',
+  'Varanda Gourmet',
+  'Ar Condicionado',
+  'Academia',
+  'Sauna',
+  'Elevador Privativo',
+  'Lareira',
+  'Portaria 24h',
+  'Adega Climatizada',
+  'Piscina Aquecida',
+  'Energia Solar Fotovoltaica',
+  'Pátio / Jardim',
+  'Fechadura Biométrica',
+  'Armários Planejados'
+];
+
 export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   propertyToEdit,
   onClose,
@@ -21,27 +40,49 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
 }) => {
   const agents = StorageService.getAgents();
 
+  // Estados dos campos do imóvel
   const [formData, setFormData] = useState({
+    code: propertyToEdit?.code || `REF${Math.floor(1000 + Math.random() * 9000)}`,
     title: propertyToEdit?.title || '',
-    price: propertyToEdit?.price || 2850000,
-    propertyType: propertyToEdit?.propertyType || ('villa' as PropertyType),
-    listingType: propertyToEdit?.listingType || 'for_sale',
-    address: propertyToEdit?.location.address || '9410 Loma Vista Drive',
-    city: propertyToEdit?.location.city || 'Beverly Hills',
-    state: propertyToEdit?.location.state || 'CA',
-    zipCode: propertyToEdit?.location.zipCode || '90210',
-    bedrooms: propertyToEdit?.specs.bedrooms || 4,
-    bathrooms: propertyToEdit?.specs.bathrooms || 4.5,
-    areaSqFt: propertyToEdit?.specs.areaSqFt || 5200,
-    amenities: propertyToEdit?.amenities.join(', ') || 'Private Infinity Pool, Wine Cellar, Smart Home Automation, Private Cinema',
+    slug: propertyToEdit?.slug || '',
     description: propertyToEdit?.description || '',
+    listingType: (propertyToEdit?.listingType || 'for_sale') as ListingType,
+    status: (propertyToEdit?.status || 'active') as PropertyStatus,
+    price: propertyToEdit?.price || 1500000,
+    rentalPrice: propertyToEdit?.rentalPrice || 0,
+    condoFee: propertyToEdit?.condoFee || 0,
+    iptuFee: propertyToEdit?.iptuFee || 0,
+    propertyType: (propertyToEdit?.propertyType || 'apartment') as PropertyType,
+    address: propertyToEdit?.location.address || '',
+    number: propertyToEdit?.location.number || '',
+    neighborhood: propertyToEdit?.location.neighborhood || '',
+    city: propertyToEdit?.location.city || 'São Paulo',
+    state: propertyToEdit?.location.state || 'SP',
+    zipCode: propertyToEdit?.location.zipCode || '',
+    bedrooms: propertyToEdit?.specs.bedrooms || 3,
+    suites: propertyToEdit?.specs.suites || 1,
+    bathrooms: propertyToEdit?.specs.bathrooms || 2,
+    garageSpaces: propertyToEdit?.specs.garageSpaces || 2,
+    areaSqM: propertyToEdit?.specs.areaSqM || (propertyToEdit?.specs.areaSqFt ? Math.round(propertyToEdit.specs.areaSqFt / 10.764) : 120),
+    yearBuilt: propertyToEdit?.specs.yearBuilt || new Date().getFullYear(),
     assignedAgentId: propertyToEdit?.assignedAgentId || agents[0]?.id || ''
   });
 
-  // Images list (featuredImage + gallery)
+  // Lista de comodidades selecionadas
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(() => {
+    return propertyToEdit?.amenities || [
+      'Piscina',
+      'Churrasqueira',
+      'Varanda Gourmet',
+      'Portaria 24h'
+    ];
+  });
+  const [customAmenityInput, setCustomAmenityInput] = useState('');
+
+  // Imagens da Galeria
   const [galleryImages, setGalleryImages] = useState<string[]>(() => {
     if (propertyToEdit) {
-      const list = [propertyToEdit.featuredImage, ...(propertyToEdit.gallery || [])];
+      const list = [propertyToEdit.featuredImage, ...(propertyToEdit.gallery || [])].filter(Boolean);
       return Array.from(new Set(list));
     }
     return [
@@ -53,8 +94,20 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   const [featuredImageIndex, setFeaturedImageIndex] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [manualImageUrl, setManualImageUrl] = useState('');
+  const [activeTab, setActiveTab] = useState<'geral' | 'valores' | 'localizacao' | 'fotos' | 'caracteristicas'>('geral');
 
-  // Handle file uploads
+  // Gerador automático de slug caso o usuário altere o título
+  const handleTitleChange = (val: string) => {
+    setFormData(prev => ({
+      ...prev,
+      title: val,
+      slug: prev.slug === '' || prev.slug === prev.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        ? val.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+        : prev.slug
+    }));
+  };
+
+  // Upload múltiplo de fotos para o Supabase Storage
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -67,10 +120,10 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         newUrls.push(url);
       }
       setGalleryImages(prev => [...newUrls, ...prev]);
-      setFeaturedImageIndex(0); // set newest uploaded as featured
+      setFeaturedImageIndex(0); // A imagem mais recente vira a capa por padrão
     } catch (err) {
-      console.error('Failed to upload image:', err);
-      alert('Error uploading image. Please try again.');
+      console.error('Erro ao fazer upload de imagem:', err);
+      alert('Falha ao processar a imagem. Tente novamente.');
     } finally {
       setIsUploading(false);
       e.target.value = '';
@@ -86,7 +139,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
 
   const handleRemoveImage = (indexToRemove: number) => {
     if (galleryImages.length <= 1) {
-      alert('A property listing requires at least one image.');
+      alert('O anúncio precisa ter no mínimo uma foto principal.');
       return;
     }
     setGalleryImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
@@ -97,52 +150,81 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     }
   };
 
-  // Google Maps preview URL
-  const googlePreviewAddress = `${formData.address}, ${formData.city}, ${formData.state}`;
-  const googleMapsEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(googlePreviewAddress)}&t=m&z=14&ie=UTF8&iwloc=&output=embed`;
+  const toggleAmenity = (amenity: string) => {
+    if (selectedAmenities.includes(amenity)) {
+      setSelectedAmenities(prev => prev.filter(a => a !== amenity));
+    } else {
+      setSelectedAmenities(prev => [...prev, amenity]);
+    }
+  };
+
+  const handleAddCustomAmenity = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = customAmenityInput.trim();
+    if (!clean) return;
+    if (!selectedAmenities.includes(clean)) {
+      setSelectedAmenities(prev => [...prev, clean]);
+    }
+    setCustomAmenityInput('');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.title.trim()) {
+      alert('Informe o título do anúncio.');
+      return;
+    }
+
     if (galleryImages.length === 0) {
-      alert('Please upload or provide at least one property image.');
+      alert('Faça upload de pelo menos uma foto para o anúncio.');
       return;
     }
 
     const featuredImg = galleryImages[featuredImageIndex] || galleryImages[0];
     const otherImages = galleryImages.filter((_, idx) => idx !== featuredImageIndex);
 
-    const slug = formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const amenitiesArray = formData.amenities.split(',').map(a => a.trim()).filter(Boolean);
+    const cleanSlug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const areaSqM = Number(formData.areaSqM) || 100;
+    const areaSqFt = Math.round(areaSqM * 10.764);
 
     const property: Property = {
       id: propertyToEdit?.id || generateUUID(),
-      title: formData.title,
-      slug,
+      tenantId: propertyToEdit?.tenantId || 't1111111-1111-1111-1111-111111111111',
+      code: formData.code.toUpperCase().trim(),
+      title: formData.title.trim(),
+      slug: cleanSlug,
       description: formData.description,
-      price: Number(formData.price),
-      propertyType: formData.propertyType as PropertyType,
-      listingType: 'for_sale',
-      status: propertyToEdit?.status || 'active',
+      price: Number(formData.price) || 0,
+      rentalPrice: Number(formData.rentalPrice) || 0,
+      condoFee: Number(formData.condoFee) || 0,
+      iptuFee: Number(formData.iptuFee) || 0,
+      propertyType: formData.propertyType,
+      listingType: formData.listingType,
+      status: formData.status,
       location: {
         address: formData.address,
+        number: formData.number,
+        neighborhood: formData.neighborhood,
         city: formData.city,
         state: formData.state,
         zipCode: formData.zipCode,
-        lat: propertyToEdit?.location.lat || 34.0522,
-        lng: propertyToEdit?.location.lng || -118.2437
+        lat: propertyToEdit?.location.lat || -23.55052,
+        lng: propertyToEdit?.location.lng || -46.633308
       },
       specs: {
-        bedrooms: Number(formData.bedrooms),
-        bathrooms: Number(formData.bathrooms),
-        areaSqFt: Number(formData.areaSqFt),
-        yearBuilt: 2024,
-        garageSpaces: 2
+        bedrooms: Number(formData.bedrooms) || 0,
+        suites: Number(formData.suites) || 0,
+        bathrooms: Number(formData.bathrooms) || 0,
+        garageSpaces: Number(formData.garageSpaces) || 0,
+        areaSqM: areaSqM,
+        areaSqFt: areaSqFt,
+        yearBuilt: Number(formData.yearBuilt) || 2024
       },
-      amenities: amenitiesArray,
+      amenities: selectedAmenities,
       featuredImage: featuredImg,
       gallery: otherImages.length > 0 ? otherImages : [featuredImg],
-      assignedAgentId: formData.assignedAgentId,
+      assignedAgentId: formData.assignedAgentId || agents[0]?.id || 'a1111111-1111-1111-1111-111111111111',
       createdAt: propertyToEdit?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -156,375 +238,716 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-content animate-fade-in"
-        style={{ maxWidth: '780px' }}
+        style={{ maxWidth: '840px', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Modal Header */}
+        {/* Header do Modal */}
         <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Building size={20} color="var(--gold-primary)" />
-            <h3 style={{ fontSize: '1.25rem', color: '#FFF' }}>
-              {propertyToEdit ? 'Edit Property Listing' : 'Create New Luxury Listing'}
-            </h3>
+            <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#FFF' }}>
+              {propertyToEdit ? `Editar Imóvel [Cód: ${propertyToEdit.code || propertyToEdit.id.slice(0, 6)}]` : 'Cadastrar Novo Imóvel'}
+            </h2>
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer' }}
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="modal-close-btn"
+            title="Fechar"
+            aria-label="Fechar"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="modal-body" style={{ maxHeight: '74vh', overflowY: 'auto' }}>
-            {/* Title */}
-            <div className="form-group">
-              <label className="form-label">Property Title *</label>
-              <input
-                type="text"
-                required
-                className="form-input"
-                placeholder="e.g. The Bel-Air Skyline Villa"
-                value={formData.title}
-                onChange={e => setFormData({ ...formData, title: e.target.value })}
-              />
-            </div>
+        {/* Abas Internas de Cadastro */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          padding: '12px 24px',
+          borderBottom: '1px solid rgba(197, 168, 128, 0.15)',
+          background: 'rgba(6, 10, 18, 0.6)',
+          overflowX: 'auto'
+        }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab('geral')}
+            className={`btn btn-sm ${activeTab === 'geral' ? 'btn-gold' : 'btn-ghost'}`}
+          >
+            Dados Gerais
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('valores')}
+            className={`btn btn-sm ${activeTab === 'valores' ? 'btn-gold' : 'btn-ghost'}`}
+          >
+            Valores & Negócio
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('localizacao')}
+            className={`btn btn-sm ${activeTab === 'localizacao' ? 'btn-gold' : 'btn-ghost'}`}
+          >
+            Localização
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('caracteristicas')}
+            className={`btn btn-sm ${activeTab === 'caracteristicas' ? 'btn-gold' : 'btn-ghost'}`}
+          >
+            Comodidades ({selectedAmenities.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('fotos')}
+            className={`btn btn-sm ${activeTab === 'fotos' ? 'btn-gold' : 'btn-ghost'}`}
+          >
+            Galeria de Fotos ({galleryImages.length})
+          </button>
+        </div>
 
-            {/* Price & Type */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
-              <div className="form-group">
-                <label className="form-label">Price (USD) *</label>
-                <input
-                  type="number"
-                  required
-                  min={10000}
-                  className="form-input"
-                  value={formData.price}
-                  onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Property Type</label>
-                <select
-                  className="form-select"
-                  value={formData.propertyType}
-                  onChange={e => setFormData({ ...formData, propertyType: e.target.value as PropertyType })}
-                >
-                  <option value="villa">Villa & Estate</option>
-                  <option value="penthouse">Penthouse</option>
-                  <option value="house">Single Family Residence</option>
-                  <option value="apartment">Luxury Condo</option>
-                  <option value="townhouse">Townhouse</option>
-                </select>
-              </div>
-            </div>
-
-            {/* IMAGE UPLOAD SECTION */}
-            <div style={{
-              background: 'rgba(11, 19, 35, 0.7)',
-              border: '1px solid var(--border-gold)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '18px',
-              marginBottom: '20px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Image size={14} color="var(--gold-primary)" />
-                  Property Image Gallery & Uploads ({galleryImages.length})
-                </label>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                  Click ⭐ on any photo to set as cover
-                </span>
-              </div>
-
-              {/* Upload Drop Zone / Button */}
-              <div style={{
-                border: '2px dashed var(--border-gold)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '20px',
-                textAlign: 'center',
-                background: 'rgba(15, 25, 45, 0.5)',
-                marginBottom: '14px',
-                position: 'relative'
-              }}>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    opacity: 0,
-                    cursor: 'pointer',
-                    width: '100%',
-                    height: '100%'
-                  }}
-                  disabled={isUploading}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                  {isUploading ? (
-                    <>
-                      <Loader2 size={26} color="var(--gold-primary)" className="animate-spin" />
-                      <span style={{ fontSize: '0.85rem', color: 'var(--gold-light)' }}>Uploading images...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload size={26} color="var(--gold-primary)" />
-                      <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#FFF' }}>
-                        Click or Drag & Drop Photos to Upload
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        Supports JPG, PNG, WEBP. Saves directly with cloud or local persistence.
-                      </span>
-                    </>
-                  )}
+        {/* Formulário com Scroll Interno */}
+        <form onSubmit={handleSubmit} style={{ overflowY: 'auto', padding: '24px', flex: 1 }}>
+          {/* ABA 1: DADOS GERAIS */}
+          {activeTab === 'geral' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
+                <div>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Hash size={13} color="var(--gold-primary)" /> Código de Referência *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={formData.code}
+                    onChange={e => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                    placeholder="Ex: AP1042"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Tipo de Imóvel *</label>
+                  <select
+                    className="form-select"
+                    value={formData.propertyType}
+                    onChange={e => setFormData({ ...formData, propertyType: e.target.value as PropertyType })}
+                  >
+                    <option value="apartment">Apartamento</option>
+                    <option value="house">Casa</option>
+                    <option value="villa">Casa em Condomínio / Villa</option>
+                    <option value="penthouse">Cobertura Duplex / Triplex</option>
+                    <option value="townhouse">Townhouse / Sobrado</option>
+                    <option value="commercial">Comercial</option>
+                  </select>
                 </div>
               </div>
 
-              {/* Uploaded Photos Grid Preview */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
-                gap: '10px',
-                maxHeight: '180px',
-                overflowY: 'auto',
-                padding: '4px'
-              }}>
-                {galleryImages.map((imgUrl, idx) => {
-                  const isFeatured = idx === featuredImageIndex;
-                  return (
-                    <div
-                      key={idx}
-                      style={{
-                        position: 'relative',
-                        height: '75px',
-                        borderRadius: 'var(--radius-sm)',
-                        overflow: 'hidden',
-                        border: isFeatured ? '2px solid var(--gold-primary)' : '1px solid var(--border-subtle)'
-                      }}
-                    >
-                      <img
-                        src={imgUrl}
-                        alt=""
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
+              <div>
+                <label className="form-label">Título do Anúncio *</label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  value={formData.title}
+                  onChange={e => handleTitleChange(e.target.value)}
+                  placeholder="Ex: Apartamento Contemporâneo com Vista Panorâmica"
+                />
+              </div>
 
-                      {/* Featured Star Badge / Button */}
-                      <button
-                        type="button"
-                        onClick={() => setFeaturedImageIndex(idx)}
-                        title={isFeatured ? 'Current Cover Image' : 'Set as Cover Image'}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label className="form-label">Slug Amigável (URL)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.slug}
+                    onChange={e => setFormData({ ...formData, slug: e.target.value })}
+                    placeholder="apartamento-contemporaneo"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Status de Publicação</label>
+                  <select
+                    className="form-select"
+                    value={formData.status}
+                    onChange={e => setFormData({ ...formData, status: e.target.value as PropertyStatus })}
+                  >
+                    <option value="active">Ativo (Publicado no site)</option>
+                    <option value="draft">Rascunho (Oculto)</option>
+                    <option value="rented">Alugado</option>
+                    <option value="sold">Vendido</option>
+                    <option value="archived">Arquivado</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '14px' }}>
+                <div>
+                  <label className="form-label">Quartos</label>
+                  <input
+                    type="number"
+                    min={0}
+                    className="form-input"
+                    value={formData.bedrooms}
+                    onChange={e => setFormData({ ...formData, bedrooms: Number(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Suítes</label>
+                  <input
+                    type="number"
+                    min={0}
+                    className="form-input"
+                    value={formData.suites}
+                    onChange={e => setFormData({ ...formData, suites: Number(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Banheiros</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.5}
+                    className="form-input"
+                    value={formData.bathrooms}
+                    onChange={e => setFormData({ ...formData, bathrooms: Number(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Vagas Garagem</label>
+                  <input
+                    type="number"
+                    min={0}
+                    className="form-input"
+                    value={formData.garageSpaces}
+                    onChange={e => setFormData({ ...formData, garageSpaces: Number(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Área Útil (m²)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    className="form-input"
+                    value={formData.areaSqM}
+                    onChange={e => setFormData({ ...formData, areaSqM: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="form-label">Corretor Responsável</label>
+                <select
+                  className="form-select"
+                  value={formData.assignedAgentId}
+                  onChange={e => setFormData({ ...formData, assignedAgentId: e.target.value })}
+                >
+                  {agents.map(a => (
+                    <option key={a.id} value={a.id}>{a.name} ({a.role})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="form-label">Descrição Detalhada do Imóvel</label>
+                <textarea
+                  rows={4}
+                  className="form-input"
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Descreva os diferenciais, acabamento, vista, lazer e detalhes do condomínio..."
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* ABA 2: VALORES & NEGÓCIO */}
+          {activeTab === 'valores' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div>
+                <label className="form-label">Tipo de Transação / Comercialização *</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, listingType: 'for_sale' })}
+                    style={{
+                      padding: '12px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: formData.listingType === 'for_sale' ? '2px solid var(--gold-primary)' : '1px solid var(--border-subtle)',
+                      background: formData.listingType === 'for_sale' ? 'rgba(197, 168, 128, 0.15)' : 'rgba(255,255,255,0.02)',
+                      color: '#FFF',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Venda
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, listingType: 'for_rent' })}
+                    style={{
+                      padding: '12px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: formData.listingType === 'for_rent' ? '2px solid var(--gold-primary)' : '1px solid var(--border-subtle)',
+                      background: formData.listingType === 'for_rent' ? 'rgba(197, 168, 128, 0.15)' : 'rgba(255,255,255,0.02)',
+                      color: '#FFF',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Locação / Aluguel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, listingType: 'both' })}
+                    style={{
+                      padding: '12px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: formData.listingType === 'both' ? '2px solid var(--gold-primary)' : '1px solid var(--border-subtle)',
+                      background: formData.listingType === 'both' ? 'rgba(197, 168, 128, 0.15)' : 'rgba(255,255,255,0.02)',
+                      color: '#FFF',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Venda & Aluguel
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label className="form-label">Preço de Venda (R$)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1000}
+                    disabled={formData.listingType === 'for_rent'}
+                    className="form-input"
+                    value={formData.price}
+                    onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
+                    placeholder="1500000"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Valor de Aluguel / Mês (R$)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    disabled={formData.listingType === 'for_sale'}
+                    className="form-input"
+                    value={formData.rentalPrice}
+                    onChange={e => setFormData({ ...formData, rentalPrice: Number(e.target.value) })}
+                    placeholder="8500"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label className="form-label">Condomínio Mensal (R$)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={50}
+                    className="form-input"
+                    value={formData.condoFee}
+                    onChange={e => setFormData({ ...formData, condoFee: Number(e.target.value) })}
+                    placeholder="1200"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">IPTU (R$)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={50}
+                    className="form-input"
+                    value={formData.iptuFee}
+                    onChange={e => setFormData({ ...formData, iptuFee: Number(e.target.value) })}
+                    placeholder="450"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ABA 3: LOCALIZAÇÃO */}
+          {activeTab === 'localizacao' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '16px' }}>
+                <div>
+                  <label className="form-label">Logradouro / Rua *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={formData.address}
+                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="Rua Haddock Lobo"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Número</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.number}
+                    onChange={e => setFormData({ ...formData, number: e.target.value })}
+                    placeholder="1400"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px' }}>
+                <div>
+                  <label className="form-label">Bairro *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={formData.neighborhood}
+                    onChange={e => setFormData({ ...formData, neighborhood: e.target.value })}
+                    placeholder="Jardins"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Cidade *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={formData.city}
+                    onChange={e => setFormData({ ...formData, city: e.target.value })}
+                    placeholder="São Paulo"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Estado (UF) *</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={2}
+                    className="form-input"
+                    value={formData.state}
+                    onChange={e => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
+                    placeholder="SP"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">CEP</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.zipCode}
+                    onChange={e => setFormData({ ...formData, zipCode: e.target.value })}
+                    placeholder="01414-002"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ABA 4: COMODIDADES */}
+          {activeTab === 'caracteristicas' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div>
+                <label className="form-label">Selecione as comodidades do imóvel e condomínio:</label>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+                  gap: '10px',
+                  marginTop: '10px'
+                }}>
+                  {COMMON_AMENITIES.map(amenity => {
+                    const isSelected = selectedAmenities.includes(amenity);
+                    return (
+                      <div
+                        key={amenity}
+                        onClick={() => toggleAmenity(amenity)}
                         style={{
-                          position: 'absolute',
-                          top: '4px',
-                          left: '4px',
-                          background: isFeatured ? 'var(--gold-primary)' : 'rgba(0,0,0,0.6)',
-                          border: 'none',
-                          borderRadius: '4px',
-                          padding: '2px 4px',
-                          color: isFeatured ? '#0B1323' : '#FFF',
+                          padding: '10px 14px',
+                          borderRadius: 'var(--radius-sm)',
+                          border: isSelected ? '1px solid var(--gold-primary)' : '1px solid rgba(255, 255, 255, 0.1)',
+                          background: isSelected ? 'rgba(197, 168, 128, 0.15)' : 'rgba(255, 255, 255, 0.02)',
+                          color: isSelected ? '#FFF' : 'var(--text-muted)',
+                          fontSize: '0.85rem',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '2px',
-                          fontSize: '0.65rem',
-                          fontWeight: 700
+                          gap: '8px',
+                          transition: 'all 0.15s ease'
                         }}
                       >
-                        <Star size={10} fill={isFeatured ? '#0B1323' : 'none'} />
-                        {isFeatured && 'COVER'}
-                      </button>
-
-                      {/* Remove Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(idx)}
-                        title="Remove image"
-                        style={{
-                          position: 'absolute',
-                          top: '4px',
-                          right: '4px',
-                          background: 'rgba(239, 68, 68, 0.85)',
-                          border: 'none',
-                          borderRadius: '999px',
-                          width: '20px',
-                          height: '20px',
-                          color: '#FFF',
-                          cursor: 'pointer',
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '3px',
+                          border: isSelected ? 'none' : '1px solid var(--text-dim)',
+                          background: isSelected ? 'var(--gold-gradient)' : 'transparent',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center'
+                        }}>
+                          {isSelected && <Check size={12} color="#0B1323" strokeWidth={3} />}
+                        </div>
+                        <span>{amenity}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Adicionar Comodidade Personalizada */}
+              <div style={{ marginTop: '10px' }}>
+                <label className="form-label">Adicionar outra característica personalizada:</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Ex: Rooftop Privativo, Carregador para Carro Elétrico..."
+                    value={customAmenityInput}
+                    onChange={e => setCustomAmenityInput(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomAmenity}
+                    className="btn btn-outline"
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
+                    <Plus size={15} /> Adicionar
+                  </button>
+                </div>
+              </div>
+
+              {/* Tags Selecionadas */}
+              {selectedAmenities.length > 0 && (
+                <div style={{ marginTop: '10px' }}>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginBottom: '8px' }}>
+                    Itens incluídos no anúncio:
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {selectedAmenities.map(item => (
+                      <span
+                        key={item}
+                        style={{
+                          background: 'rgba(197, 168, 128, 0.12)',
+                          border: '1px solid var(--border-gold)',
+                          borderRadius: '4px',
+                          padding: '4px 10px',
+                          fontSize: '0.75rem',
+                          color: '#FFF',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
                         }}
                       >
-                        <Trash2 size={10} />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Optional URL addition */}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <input
-                  type="url"
-                  className="form-input"
-                  style={{ height: '36px', fontSize: '0.75rem' }}
-                  placeholder="Or paste an image URL directly..."
-                  value={manualImageUrl}
-                  onChange={e => setManualImageUrl(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={handleAddManualUrl}
-                  className="btn btn-outline btn-sm"
-                >
-                  Add URL
-                </button>
-              </div>
+                        {item}
+                        <X
+                          size={12}
+                          style={{ cursor: 'pointer', opacity: 0.7 }}
+                          onClick={() => toggleAmenity(item)}
+                        />
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+          )}
 
-            {/* GOOGLE MAPS LOCATION SECTION */}
-            <div style={{
-              background: 'rgba(11, 19, 35, 0.7)',
-              border: '1px solid var(--border-gold)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '18px',
-              marginBottom: '20px'
-            }}>
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-                <MapPin size={14} color="var(--gold-primary)" />
-                Google Maps Location & Address
-              </label>
-
-              {/* Address & City Inputs */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontSize: '0.7rem' }}>Street Address *</label>
-                  <input
-                    type="text"
-                    required
-                    className="form-input"
-                    placeholder="e.g. 10842 Bellagio Road"
-                    value={formData.address}
-                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontSize: '0.7rem' }}>City / Neighborhood *</label>
-                  <input
-                    type="text"
-                    required
-                    className="form-input"
-                    placeholder="Bel-Air"
-                    value={formData.city}
-                    onChange={e => setFormData({ ...formData, city: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontSize: '0.7rem' }}>State</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="CA"
-                    value={formData.state}
-                    onChange={e => setFormData({ ...formData, state: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              {/* Live Google Maps Embedded Preview */}
+          {/* ABA 5: GALERIA DE FOTOS */}
+          {activeTab === 'fotos' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{
-                position: 'relative',
-                height: '180px',
-                borderRadius: 'var(--radius-sm)',
-                overflow: 'hidden',
-                border: '1px solid var(--border-gold)'
+                background: 'rgba(197, 168, 128, 0.08)',
+                border: '1px dashed var(--border-gold)',
+                borderRadius: 'var(--radius-md)',
+                padding: '28px',
+                textAlign: 'center'
               }}>
-                <iframe
-                  title="Google Maps Location Preview"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  src={googleMapsEmbedUrl}
-                />
-              </div>
-            </div>
+                <Upload size={32} color="var(--gold-primary)" style={{ margin: '0 auto 10px auto' }} />
+                <h4 style={{ fontSize: '1rem', color: '#FFF', margin: '0 0 4px 0' }}>
+                  Upload de Fotos do Imóvel
+                </h4>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 16px 0' }}>
+                  Envie fotos em alta resolução (JPG, PNG, WEBP). O upload armazena direto no Supabase Storage.
+                </p>
 
-            {/* Specs Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
-              <div className="form-group">
-                <label className="form-label">Bedrooms</label>
-                <input
-                  type="number"
-                  min={0}
-                  className="form-input"
-                  value={formData.bedrooms}
-                  onChange={e => setFormData({ ...formData, bedrooms: Number(e.target.value) })}
-                />
+                <label className="btn btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                  <span>{isUploading ? 'Processando fotos...' : 'Selecionar Fotos do Computador'}</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                    style={{ display: 'none' }}
+                  />
+                </label>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Bathrooms</label>
-                <input
-                  type="number"
-                  min={0}
-                  step={0.5}
-                  className="form-input"
-                  value={formData.bathrooms}
-                  onChange={e => setFormData({ ...formData, bathrooms: Number(e.target.value) })}
-                />
+              {/* Link manual alternativo */}
+              <div>
+                <label className="form-label">Ou adicione URL direta da imagem:</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="url"
+                    className="form-input"
+                    placeholder="https://exemplo.com/foto.jpg"
+                    value={manualImageUrl}
+                    onChange={e => setManualImageUrl(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddManualUrl}
+                    className="btn btn-outline"
+                  >
+                    Adicionar URL
+                  </button>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Area (Sq Ft)</label>
-                <input
-                  type="number"
-                  min={100}
-                  className="form-input"
-                  value={formData.areaSqFt}
-                  onChange={e => setFormData({ ...formData, areaSqFt: Number(e.target.value) })}
-                />
+              {/* Grid de Fotos com Seleção de Capa */}
+              <div>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '12px'
+                }}>
+                  <div style={{ fontSize: '0.85rem', color: '#FFF', fontWeight: 600 }}>
+                    Fotos Cadastradas ({galleryImages.length})
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--gold-light)' }}>
+                    Clique na estrela para definir a Foto de Capa (Principal)
+                  </div>
+                </div>
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                  gap: '14px'
+                }}>
+                  {galleryImages.map((imgUrl, index) => {
+                    const isFeatured = index === featuredImageIndex;
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          position: 'relative',
+                          borderRadius: 'var(--radius-sm)',
+                          overflow: 'hidden',
+                          border: isFeatured ? '2px solid var(--gold-primary)' : '1px solid rgba(255,255,255,0.15)',
+                          paddingTop: '70%',
+                          background: '#070B14'
+                        }}
+                      >
+                        <img
+                          src={imgUrl}
+                          alt=""
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                        />
+
+                        {/* Badge de Capa */}
+                        {isFeatured && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '6px',
+                            left: '6px',
+                            background: 'var(--gold-gradient)',
+                            color: '#0B1323',
+                            fontSize: '0.65rem',
+                            fontWeight: 800,
+                            padding: '2px 6px',
+                            borderRadius: '3px'
+                          }}>
+                            CAPA
+                          </div>
+                        )}
+
+                        {/* Botão Tornar Capa */}
+                        {!isFeatured && (
+                          <button
+                            type="button"
+                            onClick={() => setFeaturedImageIndex(index)}
+                            title="Definir como foto de capa"
+                            style={{
+                              position: 'absolute',
+                              top: '6px',
+                              left: '6px',
+                              background: 'rgba(6, 10, 18, 0.75)',
+                              border: 'none',
+                              color: '#FFF',
+                              borderRadius: '999px',
+                              padding: '5px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Star size={13} />
+                          </button>
+                        )}
+
+                        {/* Botão Remover */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          title="Excluir foto"
+                          style={{
+                            position: 'absolute',
+                            top: '6px',
+                            right: '6px',
+                            background: 'rgba(239, 68, 68, 0.85)',
+                            border: 'none',
+                            color: '#FFF',
+                            borderRadius: '999px',
+                            padding: '5px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Amenities */}
-            <div className="form-group">
-              <label className="form-label">Features & Amenities (Comma-separated)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Infinity Pool, Wine Cellar, Smart Home"
-                value={formData.amenities}
-                onChange={e => setFormData({ ...formData, amenities: e.target.value })}
-              />
-            </div>
-
-            {/* Description */}
-            <div className="form-group">
-              <label className="form-label">Listing Description</label>
-              <textarea
-                rows={3}
-                className="form-input"
-                placeholder="Describe architectural style, natural light, views..."
-                value={formData.description}
-                onChange={e => setFormData({ ...formData, description: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="modal-footer">
-            <button type="button" onClick={onClose} className="btn btn-outline">
-              Cancel
+          {/* Footer do Modal com Botões de Ação */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: '28px',
+            paddingTop: '20px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)'
+          }}>
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-outline"
+            >
+              Cancelar
             </button>
-            <button type="submit" className="btn btn-gold">
+
+            <button
+              type="submit"
+              className="btn btn-gold"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            >
               <Check size={16} />
-              <span>{propertyToEdit ? 'Save Changes' : 'Publish Listing'}</span>
+              <span>{propertyToEdit ? 'Salvar Alterações' : 'Publicar Imóvel'}</span>
             </button>
           </div>
         </form>

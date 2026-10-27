@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Property } from './types';
 import { StorageService, subscribeToStore } from './services/storageService';
 import { FavoritesProvider } from './context/FavoritesContext';
+import { TenantProvider, useTenant } from './context/TenantContext';
 import { Navbar } from './components/common/Navbar';
 import { PropertyCatalog } from './components/visitor/PropertyCatalog';
 import { PropertyDetailPage } from './pages/PropertyDetailPage';
@@ -11,6 +12,7 @@ import { NotificationDrawer } from './components/notifications/NotificationDrawe
 import { DemoControls } from './components/common/DemoControls';
 
 export const AppContent: React.FC = () => {
+  const { tenant, settings } = useTenant();
   const [currentView, setCurrentView] = useState<'catalog' | 'detail' | 'admin'>('catalog');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
 
@@ -136,23 +138,26 @@ export const AppContent: React.FC = () => {
               letterSpacing: '0.1em',
               marginBottom: '4px'
             }}>
-              AURA ESTATES
+              {tenant.name.toUpperCase()}
             </div>
-            <div>Luxury Residential Advisory & In-Person Viewing Platform</div>
+            <div>{settings.aboutTitle || 'Consultoria Imobiliária & Intermediação de Imóveis'}</div>
+            {tenant.documentNumber && (
+              <div style={{ fontSize: '0.75rem', marginTop: '2px', opacity: 0.8 }}>
+                {tenant.documentNumber}
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: '20px', color: 'var(--text-muted)' }}>
-            <span>Bel-Air</span>
-            <span>•</span>
-            <span>Beverly Hills</span>
-            <span>•</span>
-            <span>Tribeca</span>
-            <span>•</span>
-            <span>Miami</span>
+            {tenant.phone && <span>Tel: {tenant.phone}</span>}
+            {tenant.whatsapp && <span>WhatsApp: {tenant.whatsapp}</span>}
+            {tenant.email && <span>Email: {tenant.email}</span>}
           </div>
 
           <div>
-            English (US) | Instant Viewing Scheduling System
+            {tenant.address.city && tenant.address.state
+              ? `${tenant.address.city} - ${tenant.address.state} | Plataforma Imobiliária Multi-tenant`
+              : 'Plataforma Imobiliária Multi-tenant'}
           </div>
         </div>
       </footer>
@@ -162,9 +167,11 @@ export const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <FavoritesProvider>
-      <AppContent />
-    </FavoritesProvider>
+    <TenantProvider>
+      <FavoritesProvider>
+        <AppContent />
+      </FavoritesProvider>
+    </TenantProvider>
   );
 };
 

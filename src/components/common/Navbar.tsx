@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Home, Heart, Bell, Shield, Menu, X, ArrowRight } from 'lucide-react';
 import { useFavorites } from '../../context/FavoritesContext';
+import { useTenant } from '../../context/TenantContext';
 import { StorageService } from '../../services/storageService';
 
 interface NavbarProps {
@@ -16,10 +17,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenFavorites,
   onOpenNotifications
 }) => {
+  const { tenant } = useTenant();
   const { favoritesCount } = useFavorites();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const notifications = StorageService.getNotifications();
   const unreadCount = notifications.filter(n => n.status === 'delivered').length;
+
+  const brandParts = tenant.name.split(' ');
+  const brandMain = brandParts[0] || 'IMÓVEIS';
+  const brandSub = brandParts.slice(1).join(' ') || 'CONSULTORIA';
 
   return (
     <header style={{
@@ -70,7 +76,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               display: 'block',
               lineHeight: 1
             }}>
-              AURA
+              {brandMain.toUpperCase()}
             </span>
             <span style={{
               fontSize: '0.65rem',
@@ -79,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               textTransform: 'uppercase',
               fontWeight: 600
             }}>
-              Estates International
+              {brandSub}
             </span>
           </div>
         </div>

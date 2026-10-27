@@ -12,6 +12,9 @@ import { PropertyMap } from '../components/visitor/PropertyMap';
 import { SlotPickerCalendar } from '../components/booking/SlotPickerCalendar';
 import { BookingForm } from '../components/booking/BookingForm';
 import { ConfirmationReceipt } from '../components/booking/ConfirmationReceipt';
+import { PropertyInquiryForm } from '../components/visitor/PropertyInquiryForm';
+import { ReportErrorModal } from '../components/visitor/ReportErrorModal';
+import { MessageSquare, AlertTriangle } from 'lucide-react';
 
 interface PropertyDetailPageProps {
   property: Property;
@@ -42,6 +45,8 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
   const [confirmedBooking, setConfirmedBooking] = useState<BookingRequest | null>(null);
   const [emailStatus, setEmailStatus] = useState<any>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
+  const [activeActionTab, setActiveActionTab] = useState<'inquiry' | 'viewing'>('inquiry');
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const handleBookingSubmit = async (formData: {
     clientName: string;
@@ -291,78 +296,162 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
           )}
         </div>
 
-        {/* Right Column: "Book a Viewing" Sticky Card */}
+        {/* Right Column: Sticky Action Box (Tenho Interesse & Agendamento) */}
         <div style={{
           position: 'sticky',
           top: '100px'
         }}>
           <div className="glass-panel" style={{
-            padding: '28px',
+            padding: '24px',
             border: '2px solid var(--border-gold)',
             boxShadow: 'var(--shadow-elevated)'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'var(--gold-gradient)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Calendar size={18} color="#0B1323" strokeWidth={2.4} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.3rem', color: '#FFF', margin: 0 }}>
-                  Book an In-Person Viewing
-                </h3>
-                <span style={{ fontSize: '0.75rem', color: 'var(--gold-light)' }}>
-                  Reserve your private slot with {agent ? agent.name : 'the advisor'}
-                </span>
-              </div>
+            {/* Abas Superiores de Ação */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '8px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              padding: '4px',
+              borderRadius: 'var(--radius-sm)',
+              marginBottom: '20px'
+            }}>
+              <button
+                type="button"
+                onClick={() => setActiveActionTab('inquiry')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: 'none',
+                  fontSize: '0.825rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: activeActionTab === 'inquiry' ? 'var(--gold-gradient)' : 'transparent',
+                  color: activeActionTab === 'inquiry' ? '#0B1323' : 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <MessageSquare size={15} />
+                <span>Tenho Interesse</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveActionTab('viewing')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: 'none',
+                  fontSize: '0.825rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: activeActionTab === 'viewing' ? 'var(--gold-gradient)' : 'transparent',
+                  color: activeActionTab === 'viewing' ? '#0B1323' : 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Calendar size={15} />
+                <span>Agendar Visita</span>
+              </button>
             </div>
 
-            <p style={{
-              fontSize: '0.825rem',
-              color: 'var(--text-muted)',
-              marginBottom: '20px',
-              lineHeight: 1.5
-            }}>
-              Select your preferred appointment date and time below. Your viewing slot is held in real-time with instant email confirmation.
-            </p>
+            {/* Conteúdo Aba 1: Tenho Interesse */}
+            {activeActionTab === 'inquiry' && (
+              <div>
+                <div style={{ marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '1.25rem', color: '#FFF', margin: '0 0 4px 0' }}>
+                    Fale com o Consultor
+                  </h3>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--gold-light)' }}>
+                    Atendimento imediato para este imóvel com {agent ? agent.name : 'nossa equipe'}
+                  </span>
+                </div>
 
-            {bookingError && (
-              <div style={{
-                background: 'rgba(239, 68, 68, 0.15)',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
-                color: '#F87171',
-                padding: '12px',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.85rem',
-                marginBottom: '16px'
-              }}>
-                {bookingError}
+                <PropertyInquiryForm property={property} agent={agent} />
               </div>
             )}
 
-            {/* 1 & 2: Slot Picker */}
-            <SlotPickerCalendar
-              propertyId={property.id}
-              selectedDate={selectedDate}
-              selectedSlot={selectedSlot}
-              onSelectDate={setSelectedDate}
-              onSelectSlot={setSelectedSlot}
-            />
+            {/* Conteúdo Aba 2: Agendar Visita Presencial */}
+            {activeActionTab === 'viewing' && (
+              <div>
+                <div style={{ marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '1.25rem', color: '#FFF', margin: '0 0 4px 0' }}>
+                    Agendar Visita Presencial
+                  </h3>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--gold-light)' }}>
+                    Escolha data e horário para visita com {agent ? agent.name : 'o corretor'}
+                  </span>
+                </div>
 
-            {/* 3: Booking Form */}
-            <BookingForm
-              onSubmit={handleBookingSubmit}
-              isSubmitting={isSubmitting}
-            />
+                {bookingError && (
+                  <div style={{
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.4)',
+                    color: '#F87171',
+                    padding: '12px',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.85rem',
+                    marginBottom: '16px'
+                  }}>
+                    {bookingError}
+                  </div>
+                )}
+
+                <SlotPickerCalendar
+                  propertyId={property.id}
+                  selectedDate={selectedDate}
+                  selectedSlot={selectedSlot}
+                  onSelectDate={setSelectedDate}
+                  onSelectSlot={setSelectedSlot}
+                />
+
+                <BookingForm
+                  onSubmit={handleBookingSubmit}
+                  isSubmitting={isSubmitting}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Botão Discreto: Reportar Erro no Anúncio (Feature do Legado) */}
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+            <button
+              type="button"
+              onClick={() => setIsReportModalOpen(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-dim)',
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                textDecoration: 'underline',
+                textUnderlineOffset: '3px'
+              }}
+            >
+              <AlertTriangle size={13} color="var(--gold-primary)" />
+              <span>Reportar erro ou inconsistência neste anúncio</span>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Modal de Reporte de Erro */}
+      <ReportErrorModal
+        property={property}
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+      />
 
       {/* Confirmation Modal */}
       {confirmedBooking && (

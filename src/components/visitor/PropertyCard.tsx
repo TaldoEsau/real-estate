@@ -1,8 +1,7 @@
 import React from 'react';
-import { Bed, Bath, Maximize2, MapPin, Heart, Calendar, Car, Hash } from 'lucide-react';
+import { Bed, Bath, Maximize2, MapPin, Calendar, Car, Hash } from 'lucide-react';
 import { Property } from '../../types';
 import { formatCurrency, formatAreaM2 } from '../../utils/formatters';
-import { useFavorites } from '../../context/FavoritesContext';
 
 interface PropertyCardProps {
   property: Property;
@@ -15,13 +14,6 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   onSelect,
   onBookViewing
 }) => {
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const favorited = isFavorite(property.id);
-
-  const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleFavorite(property.id);
-  };
 
   const handleBookClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -133,35 +125,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           </div>
         )}
 
-        {/* Favorite Heart Button */}
-        <button
-          onClick={handleFavoriteClick}
-          aria-label="Salvar Imóvel"
-          style={{
-            position: 'absolute',
-            top: '12px',
-            right: '12px',
-            width: '38px',
-            height: '38px',
-            borderRadius: '999px',
-            background: 'rgba(6, 10, 18, 0.65)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            zIndex: 2
-          }}
-        >
-          <Heart
-            size={18}
-            color={favorited ? '#F87171' : '#FFF'}
-            fill={favorited ? '#F87171' : 'none'}
-          />
-        </button>
+
 
         {/* Preços (Venda e/ou Aluguel) */}
         <div style={{

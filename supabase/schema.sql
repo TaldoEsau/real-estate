@@ -7,6 +7,7 @@
 create extension if not exists "uuid-ossp";
 
 -- Limpeza de tabelas existentes (ordem reversa por dependências)
+drop table if exists public.admin_users cascade;
 drop table if exists public.property_views cascade;
 drop table if exists public.notification_records cascade;
 drop table if exists public.booking_requests cascade;
@@ -60,6 +61,23 @@ create table public.tenant_settings (
     meta_description text,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- ==============================================================================
+-- 2.1 TABELA DE USUÁRIOS ADMINISTRATIVOS DO SAAS (Acesso Restrito ao Painel)
+-- ==============================================================================
+create table public.admin_users (
+    id text primary key default gen_random_uuid()::text,
+    tenant_id text not null references public.tenants(id) on delete cascade,
+    username text not null,
+    password_hash text not null,                   -- Senha ou hash de autenticação (ex: '123')
+    name text not null default 'Administrador',
+    role text not null default 'owner' check (role in ('owner', 'admin', 'manager')),
+    is_active boolean not null default true,
+    avatar text,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    unique (tenant_id, username)
 );
 
 -- ==============================================================================
@@ -450,3 +468,17 @@ insert into public.properties (
     'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
     'a1111111-1111-1111-1111-111111111111'
 ) on conflict (id) do nothing;
+
+-- Usuário Administrador Inicial (Login de Gestão do SaaS)
+insert into public.admin_users (
+    id, tenant_id, username, password_hash, name, role, is_active
+) values (
+    'u1111111-1111-1111-1111-111111111111',
+    't1111111-1111-1111-1111-111111111111',
+    'adm',
+    '123',
+    'Gestor Imobiliário',
+    'owner',
+    true
+) on conflict (tenant_id, username) do nothing;
+

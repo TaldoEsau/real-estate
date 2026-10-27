@@ -231,3 +231,15 @@ export interface PropertyFilterState {
   minAreaSqM?: number;
   sortBy: 'price_asc' | 'price_desc' | 'newest' | 'area_desc';
 }
+
+export interface AdminUser {
+  id: string;
+  tenantId: string;
+  username: string;
+  name: string;
+  role: 'owner' | 'admin' | 'manager';
+  isActive: boolean;
+  avatar?: string;
+  createdAt: string;
+}
+

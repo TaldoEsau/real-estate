@@ -1,27 +1,18 @@
 import React, { useState } from 'react';
-import { Home, Heart, Bell, Shield, Menu, X, ArrowRight } from 'lucide-react';
-import { useFavorites } from '../../context/FavoritesContext';
+import { Home, Menu, X, MessageCircle, ArrowLeft } from 'lucide-react';
 import { useTenant } from '../../context/TenantContext';
-import { StorageService } from '../../services/storageService';
 
 interface NavbarProps {
   currentView: 'catalog' | 'detail' | 'admin';
   onNavigate: (view: 'catalog' | 'admin', propertyId?: string) => void;
-  onOpenFavorites: () => void;
-  onOpenNotifications: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentView,
-  onNavigate,
-  onOpenFavorites,
-  onOpenNotifications
+  onNavigate
 }) => {
   const { tenant } = useTenant();
-  const { favoritesCount } = useFavorites();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const notifications = StorageService.getNotifications();
-  const unreadCount = notifications.filter(n => n.status === 'delivered').length;
 
   const brandParts = tenant.name.split(' ');
   const brandMain = brandParts[0] || 'IMÓVEIS';
@@ -32,7 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      background: 'rgba(6, 10, 18, 0.88)',
+      background: 'rgba(6, 10, 18, 0.92)',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
       borderBottom: '1px solid var(--border-gold)'
@@ -94,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <nav style={{
           display: 'none',
           alignItems: 'center',
-          gap: '28px'
+          gap: '24px'
         }} className="desktop-nav">
           <button
             onClick={() => onNavigate('catalog')}
@@ -104,75 +95,36 @@ export const Navbar: React.FC<NavbarProps> = ({
               fontWeight: 600
             }}
           >
-            Explore Properties
+            Imóveis Disponíveis
           </button>
 
-          {/* Favorites Button */}
-          <button
-            onClick={onOpenFavorites}
-            className="btn btn-ghost"
-            style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-            title="Saved Properties"
-          >
-            <Heart size={18} color={favoritesCount > 0 ? '#F87171' : 'currentColor'} fill={favoritesCount > 0 ? '#F87171' : 'none'} />
-            <span>Saved</span>
-            {favoritesCount > 0 && (
-              <span style={{
-                background: '#EF4444',
-                color: '#FFF',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                padding: '2px 6px',
-                borderRadius: '999px',
-                marginLeft: '2px'
-              }}>
-                {favoritesCount}
-              </span>
-            )}
-          </button>
+          {tenant.whatsapp && (
+            <a
+              href={`https://wa.me/55${tenant.whatsapp.replace(/\D/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-outline"
+              style={{
+                fontSize: '0.8rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <MessageCircle size={15} color="#25D366" />
+              <span>Fale Conosco</span>
+            </a>
+          )}
 
-          {/* Notifications Simulator Trigger */}
-          <button
-            onClick={onOpenNotifications}
-            className="btn btn-ghost"
-            style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '6px' }}
-            title="Simulated Email & Audit Notifications"
-          >
-            <Bell size={18} />
-            <span>Notifications</span>
-            {unreadCount > 0 && (
-              <span style={{
-                background: 'var(--gold-primary)',
-                color: '#0B1323',
-                fontSize: '0.7rem',
-                fontWeight: 800,
-                padding: '2px 6px',
-                borderRadius: '999px'
-              }}>
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          {/* Admin Switcher */}
-          {currentView === 'admin' ? (
+          {/* Se estiver no Painel Admin, botão discreto para voltar ao site */}
+          {currentView === 'admin' && (
             <button
               onClick={() => onNavigate('catalog')}
-              className="btn btn-outline"
+              className="btn btn-gold btn-sm"
               style={{ fontSize: '0.8rem' }}
             >
-              <Home size={16} />
-              <span>Back to Public Catalog</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => onNavigate('admin')}
-              className="btn btn-gold"
-              style={{ fontSize: '0.8rem' }}
-            >
-              <Shield size={16} />
-              <span>Agency Admin Portal</span>
-              <ArrowRight size={14} />
+              <ArrowLeft size={15} />
+              <span>Voltar ao Site</span>
             </button>
           )}
         </nav>
@@ -180,16 +132,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Mobile Hamburger Button */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="mobile-actions">
           <button
-            onClick={onOpenNotifications}
-            className="btn btn-ghost"
-            style={{ padding: '8px' }}
-          >
-            <Bell size={20} />
-          </button>
-          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="btn btn-ghost mobile-menu-toggle"
             style={{ padding: '8px' }}
+            aria-label="Abrir Menu"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -204,7 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           padding: '20px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '14px'
+          gap: '12px'
         }}>
           <button
             onClick={() => { onNavigate('catalog'); setMobileMenuOpen(false); }}
@@ -212,42 +158,30 @@ export const Navbar: React.FC<NavbarProps> = ({
             style={{ justifyContent: 'flex-start' }}
           >
             <Home size={18} />
-            <span>Explore Properties</span>
+            <span>Imóveis Disponíveis</span>
           </button>
 
-          <button
-            onClick={() => { onOpenFavorites(); setMobileMenuOpen(false); }}
-            className="btn btn-outline"
-            style={{ justifyContent: 'flex-start' }}
-          >
-            <Heart size={18} />
-            <span>Saved Favorites ({favoritesCount})</span>
-          </button>
+          {tenant.whatsapp && (
+            <a
+              href={`https://wa.me/55${tenant.whatsapp.replace(/\D/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-outline"
+              style={{ justifyContent: 'flex-start', color: '#25D366' }}
+            >
+              <MessageCircle size={18} />
+              <span>WhatsApp de Atendimento</span>
+            </a>
+          )}
 
-          <button
-            onClick={() => { onOpenNotifications(); setMobileMenuOpen(false); }}
-            className="btn btn-outline"
-            style={{ justifyContent: 'flex-start' }}
-          >
-            <Bell size={18} />
-            <span>Notification Logs ({notifications.length})</span>
-          </button>
-
-          {currentView === 'admin' ? (
+          {currentView === 'admin' && (
             <button
               onClick={() => { onNavigate('catalog'); setMobileMenuOpen(false); }}
               className="btn btn-gold"
+              style={{ justifyContent: 'flex-start' }}
             >
-              <Home size={18} />
-              <span>Visitor Catalog</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => { onNavigate('admin'); setMobileMenuOpen(false); }}
-              className="btn btn-gold"
-            >
-              <Shield size={18} />
-              <span>Agency Admin Portal</span>
+              <ArrowLeft size={18} />
+              <span>Voltar ao Site Público</span>
             </button>
           )}
         </div>

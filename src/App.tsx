@@ -1,27 +1,69 @@
 import React, { useState, useEffect } from 'react';
 import { Property } from './types';
 import { StorageService, subscribeToStore } from './services/storageService';
-import { FavoritesProvider } from './context/FavoritesContext';
+import { AuthService } from './services/authService';
 import { TenantProvider, useTenant } from './context/TenantContext';
 import { Navbar } from './components/common/Navbar';
 import { PropertyCatalog } from './components/visitor/PropertyCatalog';
 import { PropertyDetailPage } from './pages/PropertyDetailPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
-import { SavedPropertiesDrawer } from './components/visitor/SavedPropertiesDrawer';
-import { NotificationDrawer } from './components/notifications/NotificationDrawer';
-import { DemoControls } from './components/common/DemoControls';
+import { AdminLoginPage } from './components/admin/AdminLoginPage';
 
 export const AppContent: React.FC = () => {
   const { tenant, settings } = useTenant();
+  
+  // Rota ativa baseada em estado e URL
   const [currentView, setCurrentView] = useState<'catalog' | 'detail' | 'admin'>('catalog');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  
+  // Estado de autenticação do administrador
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(AuthService.isAuthenticated());
 
-  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-
-  // Storage state tick for reactivity
+  // Storage state tick para reatividade
   const [storeRevision, setStoreRevision] = useState(0);
 
+  // Escuta alterações na autenticação
+  useEffect(() => {
+    const unsubAuth = AuthService.subscribe(user => {
+      setIsAuthenticated(!!user && user.isActive);
+    });
+    return unsubAuth;
+  }, []);
+
+  // Escuta alterações na URL (hashchange) para suportar navegação direta por rota /admin ou #admin
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      const path = window.location.pathname.toLowerCase();
+
+      if (hash.includes('admin') || path.includes('/admin')) {
+        setCurrentView('admin');
+        setSelectedPropertyId(null);
+      } else if (hash.startsWith('#imovel/')) {
+        const propId = hash.replace('#imovel/', '').trim();
+        if (propId) {
+          setSelectedPropertyId(propId);
+          setCurrentView('detail');
+        }
+      } else {
+        if (currentView === 'admin' && !hash.includes('admin')) {
+          setCurrentView('catalog');
+          setSelectedPropertyId(null);
+        }
+      }
+    };
+
+    handleLocationChange();
+    window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('popstate', handleLocationChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
+    };
+  }, [currentView]);
+
+  // Reatividade ao armazenamento de dados
   useEffect(() => {
     const unsubscribe = subscribeToStore(() => {
       setStoreRevision(prev => prev + 1);
@@ -36,13 +78,16 @@ export const AppContent: React.FC = () => {
 
   const handleNavigate = (view: 'catalog' | 'admin', propertyId?: string) => {
     if (view === 'admin') {
+      window.location.hash = '#/admin';
       setCurrentView('admin');
       setSelectedPropertyId(null);
     } else {
       if (propertyId) {
+        window.location.hash = `#/imovel/${propertyId}`;
         setSelectedPropertyId(propertyId);
         setCurrentView('detail');
       } else {
+        window.location.hash = '#/';
         setCurrentView('catalog');
         setSelectedPropertyId(null);
       }
@@ -51,22 +96,30 @@ export const AppContent: React.FC = () => {
   };
 
   const handleSelectProperty = (property: Property) => {
+    window.location.hash = `#/imovel/${property.id}`;
     setSelectedPropertyId(property.id);
     setCurrentView('detail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleLogout = () => {
+    AuthService.logout();
+    setIsAuthenticated(false);
+    window.location.hash = '#/';
+    setCurrentView('catalog');
+    setSelectedPropertyId(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Navigation Header */}
+      {/* Barra de Navegação Superior (Limpa e em Português) */}
       <Navbar
         currentView={currentView}
         onNavigate={handleNavigate}
-        onOpenFavorites={() => setIsFavoritesOpen(true)}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
       />
 
-      {/* Main View Display */}
+      {/* Exibição Principal de Conteúdo */}
       <main style={{ flex: 1 }}>
         {currentView === 'catalog' && (
           <PropertyCatalog
@@ -80,40 +133,37 @@ export const AppContent: React.FC = () => {
           <PropertyDetailPage
             property={selectedProperty}
             onBack={() => {
+              window.location.hash = '#/';
               setCurrentView('catalog');
               setSelectedPropertyId(null);
             }}
-            onOpenNotifications={() => setIsNotificationsOpen(true)}
           />
         )}
 
+        {/* Rota Administrativa Protegida */}
         {currentView === 'admin' && (
-          <AdminDashboardPage
-            onPreviewProperty={handleSelectProperty}
-            onRefresh={() => setStoreRevision(prev => prev + 1)}
-          />
+          isAuthenticated ? (
+            <AdminDashboardPage
+              onPreviewProperty={handleSelectProperty}
+              onRefresh={() => setStoreRevision(prev => prev + 1)}
+              onLogout={handleLogout}
+            />
+          ) : (
+            <AdminLoginPage
+              onLoginSuccess={() => {
+                setIsAuthenticated(true);
+                setStoreRevision(prev => prev + 1);
+              }}
+              onBackToPublic={() => {
+                window.location.hash = '#/';
+                setCurrentView('catalog');
+              }}
+            />
+          )
         )}
       </main>
 
-      {/* Slide-over Drawers */}
-      <SavedPropertiesDrawer
-        isOpen={isFavoritesOpen}
-        onClose={() => setIsFavoritesOpen(false)}
-        onSelectProperty={handleSelectProperty}
-      />
-
-      <NotificationDrawer
-        isOpen={isNotificationsOpen}
-        onClose={() => setIsNotificationsOpen(false)}
-      />
-
-      {/* Demo Floating Controls */}
-      <DemoControls
-        currentView={currentView}
-        onToggleView={() => handleNavigate(currentView === 'admin' ? 'catalog' : 'admin')}
-      />
-
-      {/* Luxury Footer */}
+      {/* Rodapé Institucional */}
       <footer style={{
         background: '#04070E',
         borderTop: '1px solid var(--border-gold)',
@@ -154,10 +204,31 @@ export const AppContent: React.FC = () => {
             {tenant.email && <span>Email: {tenant.email}</span>}
           </div>
 
-          <div>
-            {tenant.address.city && tenant.address.state
-              ? `${tenant.address.city} - ${tenant.address.state} | Plataforma Imobiliária Multi-tenant`
-              : 'Plataforma Imobiliária Multi-tenant'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+            <span>
+              {tenant.address.city && tenant.address.state
+                ? `${tenant.address.city} - ${tenant.address.state}`
+                : 'Plataforma Imobiliária'}
+            </span>
+            <span style={{ opacity: 0.3 }}>•</span>
+            
+            {/* Acesso Restrito ao Dono da Imobiliária */}
+            <button
+              onClick={() => handleNavigate('admin')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-dim)',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+                opacity: 0.5,
+                padding: 0
+              }}
+              title="Acesso exclusivo ao proprietário e administradores"
+            >
+              Acesso Restrito
+            </button>
           </div>
         </div>
       </footer>
@@ -168,9 +239,7 @@ export const AppContent: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <TenantProvider>
-      <FavoritesProvider>
-        <AppContent />
-      </FavoritesProvider>
+      <AppContent />
     </TenantProvider>
   );
 };

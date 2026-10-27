@@ -11,7 +11,7 @@ interface ConfirmationReceiptProps {
   booking: BookingRequest;
   emailStatus?: EmailDispatchResult | null;
   onClose: () => void;
-  onOpenNotifications: () => void;
+  onOpenNotifications?: () => void;
 }
 
 export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
@@ -207,24 +207,26 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
                 style={{ flex: 1, fontSize: '0.8rem' }}
               >
                 <Mail size={14} />
-                <span>Email Advisor Directly</span>
+                <span>Enviar E-mail ao Corretor</span>
               </a>
 
-              <button
-                onClick={() => {
-                  onClose();
-                  onOpenNotifications();
-                }}
-                className="btn btn-ghost"
-                style={{
-                  flex: 1,
-                  fontSize: '0.8rem',
-                  border: '1px dashed var(--border-subtle)'
-                }}
-              >
-                <Check size={14} color="var(--gold-primary)" />
-                <span>View HTML Email Preview</span>
-              </button>
+              {onOpenNotifications && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenNotifications();
+                  }}
+                  className="btn btn-ghost"
+                  style={{
+                    flex: 1,
+                    fontSize: '0.8rem',
+                    border: '1px dashed var(--border-subtle)'
+                  }}
+                >
+                  <Check size={14} color="var(--gold-primary)" />
+                  <span>Ver Prévia do E-mail</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -236,7 +238,7 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
             className="btn btn-gold"
             style={{ width: '100%', maxWidth: '240px' }}
           >
-            Done
+            Concluir
           </button>
         </div>
       </div>

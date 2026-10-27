@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Bed, Bath, Maximize2, Calendar, Phone, Mail, CheckCircle2, Heart, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, MapPin, Bed, Bath, Maximize2, Calendar, Phone, Mail, CheckCircle2, ShieldCheck, MessageSquare, AlertTriangle } from 'lucide-react';
 import { Property, BookingRequest } from '../types';
 import { formatCurrency, formatArea } from '../utils/formatters';
 import { StorageService } from '../services/storageService';
 import { BookingService } from '../services/bookingService';
 import { NotificationService } from '../services/notificationService';
 import { EmailDispatchService } from '../services/emailDispatchService';
-import { useFavorites } from '../context/FavoritesContext';
 import { PhotoGallery } from '../components/visitor/PhotoGallery';
 import { PropertyMap } from '../components/visitor/PropertyMap';
 import { SlotPickerCalendar } from '../components/booking/SlotPickerCalendar';
@@ -14,22 +13,17 @@ import { BookingForm } from '../components/booking/BookingForm';
 import { ConfirmationReceipt } from '../components/booking/ConfirmationReceipt';
 import { PropertyInquiryForm } from '../components/visitor/PropertyInquiryForm';
 import { ReportErrorModal } from '../components/visitor/ReportErrorModal';
-import { MessageSquare, AlertTriangle } from 'lucide-react';
 
 interface PropertyDetailPageProps {
   property: Property;
   onBack: () => void;
-  onOpenNotifications: () => void;
+  onOpenNotifications?: () => void;
 }
 
 export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
   property,
-  onBack,
-  onOpenNotifications
+  onBack
 }) => {
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const favorited = isFavorite(property.id);
-
   const agent = StorageService.getAgentById(property.assignedAgentId) || StorageService.getAgents()[0];
 
   // Booking state
@@ -55,7 +49,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
     notes: string;
   }) => {
     if (!selectedSlot) {
-      setBookingError('Please choose a 45-minute viewing time slot.');
+      setBookingError('Por favor, selecione um horário para a visita.');
       return;
     }
     setBookingError(null);
@@ -109,20 +103,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
         >
           <ArrowLeft size={16} />
-          <span>Back to Catalog</span>
-        </button>
-
-        <button
-          onClick={() => toggleFavorite(property.id)}
-          className="btn btn-outline btn-sm"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-        >
-          <Heart
-            size={16}
-            color={favorited ? '#F87171' : 'currentColor'}
-            fill={favorited ? '#F87171' : 'none'}
-          />
-          <span>{favorited ? 'Saved to Favorites' : 'Save Property'}</span>
+          <span>Voltar aos Imóveis</span>
         </button>
       </div>
 
@@ -157,7 +138,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
 
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Offering Price
+            Valor do Imóvel
           </div>
           <div style={{
             fontSize: 'clamp(2rem, 3vw, 2.8rem)',
@@ -196,23 +177,23 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
             <div>
               <Bed size={22} color="var(--gold-primary)" style={{ margin: '0 auto 6px auto' }} />
               <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#FFF' }}>{property.specs.bedrooms}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Bedrooms</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dormitórios</div>
             </div>
             <div>
               <Bath size={22} color="var(--gold-primary)" style={{ margin: '0 auto 6px auto' }} />
               <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#FFF' }}>{property.specs.bathrooms}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Bathrooms</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Banheiros</div>
             </div>
             <div>
               <Maximize2 size={22} color="var(--gold-primary)" style={{ margin: '0 auto 6px auto' }} />
               <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#FFF' }}>{formatArea(property.specs.areaSqFt)}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Living Area</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Área Útil</div>
             </div>
             {property.specs.yearBuilt && (
               <div>
                 <Calendar size={22} color="var(--gold-primary)" style={{ margin: '0 auto 6px auto' }} />
                 <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#FFF' }}>{property.specs.yearBuilt}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Year Built</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Ano de Construção</div>
               </div>
             )}
           </div>
@@ -220,7 +201,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
           {/* Overview Description */}
           <div className="glass-panel" style={{ padding: '28px' }}>
             <h3 style={{ fontSize: '1.3rem', color: '#FFF', marginBottom: '14px' }}>
-              The Residence Overview
+              Sobre o Imóvel
             </h3>
             <p style={{
               color: 'var(--text-muted)',
@@ -239,7 +220,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
               marginTop: '28px',
               marginBottom: '14px'
             }}>
-              Features & Amenities
+              Comodidades & Diferenciais
             </h4>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {property.amenities.map(amenity => (
@@ -279,7 +260,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
               />
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--gold-light)', textTransform: 'uppercase', fontWeight: 700 }}>
-                  Assigned Listing Partner
+                  Corretor Responsável
                 </div>
                 <h4 style={{ fontSize: '1.2rem', color: '#FFF', margin: '2px 0 4px 0' }}>{agent.name}</h4>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{agent.role}</p>
@@ -462,7 +443,6 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
             setConfirmedBooking(null);
             setEmailStatus(null);
           }}
-          onOpenNotifications={onOpenNotifications}
         />
       )}
     </div>

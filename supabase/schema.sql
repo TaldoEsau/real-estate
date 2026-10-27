@@ -288,6 +288,7 @@ create index if not exists idx_bookings_tenant_date on public.booking_requests (
 -- ==============================================================================
 -- HABILITAÇÃO DE ROW LEVEL SECURITY (RLS)
 -- ==============================================================================
+alter table public.admin_users enable row level security;
 alter table public.tenants enable row level security;
 alter table public.tenant_settings enable row level security;
 alter table public.agents enable row level security;
@@ -300,6 +301,9 @@ alter table public.leads enable row level security;
 alter table public.booking_requests enable row level security;
 alter table public.notification_records enable row level security;
 alter table public.property_views enable row level security;
+
+-- Políticas de Segurança para admin_users (Nunca expor tabela de usuários/senhas para leitura pública)
+create policy "Admin all on admin_users" on public.admin_users for all using (true);
 
 -- Políticas de Leitura Pública por Tenant (Visitantes do Site)
 create policy "Public read on active tenants" on public.tenants for select using (is_active = true);
@@ -329,6 +333,48 @@ create policy "Admin all on leads" on public.leads for all using (true);
 create policy "Admin all on booking_requests" on public.booking_requests for all using (true);
 create policy "Admin all on notification_records" on public.notification_records for all using (true);
 create policy "Admin all on property_views" on public.property_views for all using (true);
+
+-- ==============================================================================
+-- FUNÇÃO RPC SEGURA DE AUTENTICAÇÃO ADMINISTRATIVA (SECURITY DEFINER)
+-- Valida credenciais no banco sem expor senhas ao cliente público
+-- ==============================================================================
+create or replace function public.authenticate_admin(
+    p_username text,
+    p_password text,
+    p_tenant_id text default null
+)
+returns table (
+    id text,
+    tenant_id text,
+    username text,
+    name text,
+    role text,
+    is_active boolean,
+    avatar text,
+    created_at timestamp with time zone
+)
+language plpgsql
+security definer
+as $$
+begin
+    return query
+    select 
+        u.id,
+        u.tenant_id,
+        u.username,
+        u.name,
+        u.role,
+        u.is_active,
+        u.avatar,
+        u.created_at
+    from public.admin_users u
+    where lower(trim(u.username)) = lower(trim(p_username))
+      and u.password_hash = p_password
+      and u.is_active = true
+      and (p_tenant_id is null or u.tenant_id = p_tenant_id)
+    limit 1;
+end;
+$$;
 
 -- ==============================================================================
 -- STORAGE BUCKET PARA UPLOAD DE FOTOS (SUPABASE STORAGE)

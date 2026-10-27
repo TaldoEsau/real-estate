@@ -163,6 +163,15 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     loadTenantData();
   }, []);
 
+  // Atualiza dinamicamente o título da página conforme a imobiliária ativa
+  useEffect(() => {
+    if (settings?.metaTitle) {
+      document.title = settings.metaTitle;
+    } else if (tenant?.name) {
+      document.title = `${tenant.name} | Consultoria Imobiliária & Gestão`;
+    }
+  }, [tenant, settings]);
+
   const updateSettings = async (newSettings: Partial<TenantSettings>) => {
     const updated = { ...settings, ...newSettings, updatedAt: new Date().toISOString() };
     setSettings(updated);

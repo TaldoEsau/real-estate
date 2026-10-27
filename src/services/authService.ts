@@ -67,6 +67,30 @@ export class AuthService {
     // 1. Tenta autenticar pelo Supabase (se configurado)
     if (isSupabaseConfigured && supabase) {
       try {
+        // Tenta primeiro via RPC segura (SECURITY DEFINER)
+        const { data: rpcData, error: rpcError } = await supabase.rpc('authenticate_admin', {
+          p_username: cleanUser,
+          p_password: cleanPass,
+          p_tenant_id: tenantId || null
+        });
+
+        if (!rpcError && rpcData && rpcData.length > 0) {
+          const row = rpcData[0];
+          const authenticatedUser: AdminUser = {
+            id: row.id,
+            tenantId: row.tenant_id,
+            username: row.username,
+            name: row.name,
+            role: row.role as 'owner' | 'admin' | 'manager',
+            isActive: row.is_active,
+            avatar: row.avatar,
+            createdAt: row.created_at
+          };
+          this.setSession(authenticatedUser);
+          return { success: true, user: authenticatedUser };
+        }
+
+        // Fallback caso a RPC ainda não tenha sido executada no banco
         let query = supabase
           .from('admin_users')
           .select('*')

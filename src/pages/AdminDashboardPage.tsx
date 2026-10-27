@@ -58,7 +58,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
 
   const handleCopySql = () => {
     const sqlUrl = 'https://supabase.com/dashboard/project/fdcvfizcfuxwimpnablp/sql';
-    window.open(sqlUrl, '_blank');
+    window.open(sqlUrl, '_blank', 'noopener,noreferrer');
     setCopiedSql(true);
     setTimeout(() => setCopiedSql(false), 3000);
   };

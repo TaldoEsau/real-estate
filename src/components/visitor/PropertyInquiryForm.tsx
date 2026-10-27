@@ -60,11 +60,12 @@ export const PropertyInquiryForm: React.FC<PropertyInquiryFormProps> = ({
   };
 
   const handleWhatsAppClick = () => {
-    const rawNumber = agent?.phone ? agent.phone.replace(/\D/g, '') : '5511987654321';
+    const rawNumber = agent?.phone ? agent.phone.replace(/\D/g, '') : '17997577374';
+    const fullNumber = rawNumber.startsWith('55') ? rawNumber : `55${rawNumber}`;
     const text = encodeURIComponent(
       `Olá! Estou no site vendo o imóvel "${property.title}" (Cód: ${property.code || property.id.slice(0, 6)}). Gostaria de falar sobre ele.`
     );
-    window.open(`https://wa.me/${rawNumber}?text=${text}`, '_blank');
+    window.open(`https://wa.me/${fullNumber}?text=${text}`, '_blank', 'noopener,noreferrer');
   };
 
   return (

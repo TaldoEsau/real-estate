@@ -62,7 +62,7 @@ export const AgentManagementTable: React.FC<AgentManagementTableProps> = ({
         marginBottom: '24px'
       }}>
         <div>
-          <h2 style={{ fontSize: '1.25rem', color: '#FFF', margin: '0 0 4px 0' }}>
+          <h2 style={{ fontSize: '1.35rem', color: 'var(--text-main)', margin: '0 0 4px 0' }}>
             Equipe & Corretores Responsáveis
           </h2>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -126,8 +126,8 @@ export const AgentManagementTable: React.FC<AgentManagementTableProps> = ({
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                       <h3 style={{
-                        fontSize: '1.1rem',
-                        color: '#FFF',
+                        fontSize: '1.15rem',
+                        color: 'var(--text-main)',
                         margin: 0,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',

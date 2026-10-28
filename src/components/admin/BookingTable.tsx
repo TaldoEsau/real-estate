@@ -44,6 +44,14 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
     }
   };
 
+  const statusLabels: Record<'all' | BookingStatus, string> = {
+    all: 'Todos',
+    confirmed: 'Confirmado',
+    pending: 'Pendente',
+    rescheduled: 'Reagendado',
+    cancelled: 'Cancelado'
+  };
+
   return (
     <div>
       {/* Controls Bar */}
@@ -63,7 +71,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
               type="text"
               className="form-input"
               style={{ paddingLeft: '36px', height: '38px', fontSize: '0.8rem' }}
-              placeholder="Search client name, email, or listing..."
+              placeholder="Buscar nome do cliente, e-mail ou imóvel..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
@@ -75,9 +83,8 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 className={`btn btn-sm ${statusFilter === s ? 'btn-gold' : 'btn-outline'}`}
-                style={{ textTransform: 'capitalize' }}
               >
-                {s} ({s === 'all' ? bookings.length : bookings.filter(b => b.status === s).length})
+                {statusLabels[s]} ({s === 'all' ? bookings.length : bookings.filter(b => b.status === s).length})
               </button>
             ))}
           </div>
@@ -90,7 +97,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
           style={{ fontSize: '0.85rem' }}
         >
           <Download size={16} />
-          <span>Export Bookings (CSV)</span>
+          <span>Exportar Visitas (CSV)</span>
         </button>
       </div>
 
@@ -99,25 +106,25 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
         {filtered.length === 0 ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <Calendar size={36} color="var(--border-gold)" style={{ margin: '0 auto 10px auto' }} />
-            <p>No viewing requests match your filter.</p>
+            <p>Nenhuma solicitação de visita encontrada para este filtro.</p>
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '850px' }}>
             <thead>
               <tr style={{
-                background: 'rgba(11, 19, 35, 0.9)',
+                background: '#F3F1EB',
                 borderBottom: '1px solid var(--border-gold)',
                 fontSize: '0.75rem',
                 textTransform: 'uppercase',
                 color: 'var(--text-gold)',
                 letterSpacing: '0.05em'
               }}>
-                <th style={{ padding: '16px 20px' }}>Date & Slot</th>
-                <th style={{ padding: '16px 14px' }}>Property</th>
-                <th style={{ padding: '16px 14px' }}>Client Info</th>
-                <th style={{ padding: '16px 14px' }}>Notes</th>
+                <th style={{ padding: '16px 20px' }}>Data & Horário</th>
+                <th style={{ padding: '16px 14px' }}>Imóvel</th>
+                <th style={{ padding: '16px 14px' }}>Dados do Cliente</th>
+                <th style={{ padding: '16px 14px' }}>Observações</th>
                 <th style={{ padding: '16px 14px' }}>Status</th>
-                <th style={{ padding: '16px 20px', textAlign: 'right' }}>Update Status</th>
+                <th style={{ padding: '16px 20px', textAlign: 'right' }}>Atualizar Status</th>
               </tr>
             </thead>
             <tbody>
@@ -131,7 +138,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
                 >
                   {/* Date & Slot */}
                   <td style={{ padding: '16px 20px' }}>
-                    <div style={{ fontWeight: 700, color: '#FFF', fontSize: '0.9rem' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.9rem' }}>
                       {formatDateString(booking.date)}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--gold-primary)', fontWeight: 600 }}>
@@ -141,7 +148,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
 
                   {/* Property */}
                   <td style={{ padding: '16px 14px', maxWidth: '240px' }}>
-                    <div style={{ fontWeight: 600, color: '#FFF', fontSize: '0.85rem' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.85rem' }}>
                       {booking.propertyTitle}
                     </div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
@@ -151,7 +158,7 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
 
                   {/* Client Info */}
                   <td style={{ padding: '16px 14px' }}>
-                    <div style={{ fontWeight: 600, color: '#FFF', fontSize: '0.85rem' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.85rem' }}>
                       {booking.clientName}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -166,13 +173,13 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
 
                   {/* Notes */}
                   <td style={{ padding: '16px 14px', fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '200px' }}>
-                    {booking.notes || <span style={{ color: 'var(--text-dim)' }}>None</span>}
+                    {booking.notes || <span style={{ color: 'var(--text-dim)' }}>Nenhuma</span>}
                   </td>
 
                   {/* Status Badge */}
                   <td style={{ padding: '16px 14px' }}>
                     <span className={`badge ${getBadgeClass(booking.status)}`}>
-                      {booking.status}
+                      {statusLabels[booking.status] || booking.status}
                     </span>
                   </td>
 
@@ -183,30 +190,30 @@ export const BookingTable: React.FC<BookingTableProps> = ({ bookings, onRefresh 
                         <button
                           onClick={() => handleStatusChange(booking.id, 'confirmed')}
                           className="btn btn-sm btn-outline"
-                          title="Confirm Booking"
+                          title="Confirmar Visita"
                         >
                           <Check size={14} color="#34D399" />
-                          <span>Confirm</span>
+                          <span>Confirmar</span>
                         </button>
                       )}
                       {booking.status !== 'rescheduled' && (
                         <button
                           onClick={() => handleStatusChange(booking.id, 'rescheduled')}
                           className="btn btn-sm btn-outline"
-                          title="Reschedule Booking"
+                          title="Reagendar Visita"
                         >
                           <RefreshCw size={13} color="#818CF8" />
-                          <span>Reschedule</span>
+                          <span>Reagendar</span>
                         </button>
                       )}
                       {booking.status !== 'cancelled' && (
                         <button
                           onClick={() => handleStatusChange(booking.id, 'cancelled')}
                           className="btn btn-sm btn-danger"
-                          title="Cancel Booking"
+                          title="Cancelar Visita"
                         >
                           <XCircle size={14} />
-                          <span>Cancel</span>
+                          <span>Cancelar</span>
                         </button>
                       )}
                     </div>

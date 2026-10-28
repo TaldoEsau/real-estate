@@ -12,7 +12,7 @@ export const DemoControls: React.FC<DemoControlsProps> = ({ currentView, onToggl
   const [resetFeedback, setResetFeedback] = useState(false);
 
   const handleReset = () => {
-    if (window.confirm('Reset all demo listings, bookings, and notifications to default sample data?')) {
+    if (window.confirm('Deseja restaurar todos os imóveis, agendamentos e notificações de demonstração para os dados iniciais?')) {
       StorageService.resetDemoData();
       setResetFeedback(true);
       setTimeout(() => setResetFeedback(false), 2500);
@@ -47,7 +47,7 @@ export const DemoControls: React.FC<DemoControlsProps> = ({ currentView, onToggl
           boxShadow: `0 0 8px ${isSupabaseConfigured ? '#10B981' : '#F59E0B'}`
         }} />
         <span style={{ color: 'var(--text-muted)' }}>
-          {isSupabaseConfigured ? 'Supabase Connected' : 'Local Storage Mode'}
+          {isSupabaseConfigured ? 'Supabase Conectado' : 'Modo Armazenamento Local'}
         </span>
       </div>
 
@@ -68,7 +68,7 @@ export const DemoControls: React.FC<DemoControlsProps> = ({ currentView, onToggl
         }}
       >
         <Sparkles size={12} color="var(--gold-primary)" />
-        <span>Switch to {currentView === 'admin' ? 'Visitor View' : 'Admin Portal'}</span>
+        <span>Alternar para {currentView === 'admin' ? 'Visão do Visitante' : 'Painel Administrativo'}</span>
       </button>
 
       <span style={{ color: 'var(--border-subtle)' }}>|</span>
@@ -76,7 +76,7 @@ export const DemoControls: React.FC<DemoControlsProps> = ({ currentView, onToggl
       {/* Reset Demo Data Button */}
       <button
         onClick={handleReset}
-        title="Reset catalog and bookings to seed data"
+        title="Restaurar catálogo e agendamentos para os dados iniciais"
         style={{
           background: 'none',
           border: 'none',
@@ -88,7 +88,7 @@ export const DemoControls: React.FC<DemoControlsProps> = ({ currentView, onToggl
         }}
       >
         {resetFeedback ? <Check size={12} /> : <RotateCcw size={12} />}
-        <span>{resetFeedback ? 'Data Reset!' : 'Reset Demo'}</span>
+        <span>{resetFeedback ? 'Dados Restaurados!' : 'Restaurar Demo'}</span>
       </button>
     </div>
   );

@@ -95,6 +95,9 @@ export interface PropertyLocation {
   zipCode?: string;
   lat: number;
   lng: number;
+  mapQuery?: string;
+  useExactCoords?: boolean;
+  isLocationConfirmed?: boolean;
 }
 
 export interface PropertySpecs {

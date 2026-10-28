@@ -19,13 +19,13 @@ export const EmailDispatchService = {
     const agent = StorageService.getAgentById(booking.agentId);
     const formattedDate = formatDateString(booking.date);
     const agentName = agent ? agent.name : 'Alexandra Vance';
-    const agentPhone = agent ? agent.phone : '+1 (310) 849-2201';
-    const agentEmail = agent ? agent.email : 'alexandra.vance@auraestates.com';
+    const agentPhone = agent ? agent.phone : '+55 (11) 98849-2201';
+    const agentEmail = agent ? agent.email : 'alexandra.vance@auraimoveis.com.br';
     const refCode = booking.id.slice(0, 8).toUpperCase();
 
     const fullLocation = property 
       ? `${property.location.address}, ${property.location.city}, ${property.location.state}`
-      : '9410 Loma Vista Drive, Beverly Hills, CA';
+      : 'Av. Brigadeiro Faria Lima, 3477, São Paulo, SP';
 
     // Inline SVG icons matching the exact layout colors (#C8AD7F and #8E8E8E)
     const icons = {
@@ -45,11 +45,11 @@ export const EmailDispatchService = {
 
     return `
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Confirmation - AURA ESTATES</title>
+  <title>Confirmação de Visita - AURA IMÓVEIS</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body style="margin: 0; padding: 0; background-color: #0d0d0d; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #FFFFFF; -webkit-font-smoothing: antialiased;">
@@ -64,21 +64,21 @@ export const EmailDispatchService = {
               <!-- Brand Header -->
               <div style="text-align: center; margin-bottom: 22px;">
                 <h1 style="margin: 0; font-family: 'Cinzel', 'Times New Roman', Georgia, serif; font-size: 28px; letter-spacing: 2.5px; color: #C8AD7F; font-weight: 400; text-transform: uppercase;">
-                  AURA ESTATES
+                  AURA IMÓVEIS
                 </h1>
                 <div style="height: 1px; background-color: #4A3E2D; margin: 16px auto 22px auto; width: 100%;"></div>
                 <h2 style="margin: 0 0 8px 0; font-size: 19px; font-weight: 600; color: #EDEDED; letter-spacing: 0.8px; text-transform: uppercase;">
-                  BOOKING CONFIRMATION
+                  CONFIRMAÇÃO DE VISITA
                 </h2>
                 <p style="margin: 0; font-size: 12.5px; color: #B8B8B8; line-height: 1.4;">
-                  Your appointment has been successfully confirmed. Below are the details of your visit:
+                  Sua visita foi confirmada com sucesso. Confira abaixo os detalhes do seu agendamento:
                 </p>
               </div>
 
               <!-- Card 1: Property -->
               <div style="background-color: #242424; border: 1px solid #363636; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px;">
                 <div style="color: #C8AD7F; font-size: 13px; font-weight: 600; margin-bottom: 5px;">
-                  ${icons.home}Property
+                  ${icons.home}Imóvel
                 </div>
                 <div style="color: #FFFFFF; font-size: 15.5px; font-weight: 700; margin-bottom: 5px;">
                   ${booking.propertyTitle}
@@ -91,20 +91,20 @@ export const EmailDispatchService = {
               <!-- Section 2: Date & Time (No Box) -->
               <div style="padding: 2px 4px 14px 4px;">
                 <div style="color: #C8AD7F; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
-                  ${icons.calendarGold}Date & Time
+                  ${icons.calendarGold}Data & Horário
                 </div>
                 <div style="color: #FFFFFF; font-size: 13.5px; font-weight: 600; margin-bottom: 5px;">
                   ${icons.calendarGray}${formattedDate}
                 </div>
                 <div style="color: #FFFFFF; font-size: 13.5px; font-weight: 600;">
-                  ${icons.clock}${booking.timeSlot} (45-Minute Private Session)
+                  ${icons.clock}${booking.timeSlot} (Sessão Privativa de 45 Minutos)
                 </div>
               </div>
 
               <!-- Card 3: Client -->
               <div style="background-color: #242424; border: 1px solid #363636; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px;">
                 <div style="color: #C8AD7F; font-size: 13px; font-weight: 600; margin-bottom: 5px;">
-                  ${icons.user}Client
+                  ${icons.user}Cliente
                 </div>
                 <div style="color: #FFFFFF; font-size: 14.5px; font-weight: 700;">
                   ${booking.clientName}
@@ -114,7 +114,7 @@ export const EmailDispatchService = {
               <!-- Section 4: Reference Code (No Box) -->
               <div style="padding: 2px 4px 14px 4px;">
                 <div style="color: #C8AD7F; font-size: 13px; font-weight: 600; margin-bottom: 5px;">
-                  ${icons.tag}Reference Code
+                  ${icons.tag}Código de Referência
                 </div>
                 <div style="color: #FFFFFF; font-size: 14.5px; font-weight: 700;">
                   #${refCode}
@@ -123,12 +123,12 @@ export const EmailDispatchService = {
 
               <!-- Card 5: Your Dedicated Advisor -->
               <div style="background-color: #242424; border: 1px solid #363636; border-radius: 8px; padding: 14px 20px; margin-bottom: 12px;">
-                <div style="padding-left: 72px;">
+                <div style="padding-left: 12px;">
                   <div style="color: #C8AD7F; font-size: 13px; font-weight: 600; margin-bottom: 4px;">
-                    Your Dedicated Advisor
+                    Seu Corretor Responsável
                   </div>
                   <div style="color: #FFFFFF; font-size: 14px; font-weight: 700; margin-bottom: 3px;">
-                    ${agentName} (Senior Partner)
+                    ${agentName} (Consultor Sênior)
                   </div>
                   <div style="color: #E0E0E0; font-size: 12.5px;">
                     ${agentPhone} | <a href="mailto:${agentEmail}" style="color: #E0E0E0; text-decoration: none;">${agentEmail}</a>
@@ -139,20 +139,20 @@ export const EmailDispatchService = {
               <!-- Card 6: Arrival & Security Protocol -->
               <div style="background-color: #242424; border: 1px solid #363636; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px;">
                 <div style="color: #C8AD7F; font-size: 13px; font-weight: 600; margin-bottom: 5px;">
-                  ${icons.shield}Arrival & Security Protocol
+                  ${icons.shield}Protocolo de Chegada & Segurança
                 </div>
                 <div style="color: #E0E0E0; font-size: 12.5px; line-height: 1.45;">
-                  Valet service and security gate clearance have been pre-authorized. Please arrive 5 minutes prior to your scheduled appointment.
+                  O acesso na portaria e o serviço de recepção foram pré-autorizados. Por favor, chegue com 5 minutos de antecedência ao horário agendado.
                 </div>
               </div>
 
               <!-- Card 7: Special Requests -->
               <div style="background-color: #242424; border: 1px solid #363636; border-radius: 8px; padding: 14px 16px; margin-bottom: 6px;">
                 <div style="color: #C8AD7F; font-size: 13px; font-weight: 600; margin-bottom: 5px;">
-                  ${icons.message}Special Requests
+                  ${icons.message}Observações Especiais
                 </div>
                 <div style="color: #E0E0E0; font-size: 13px;">
-                  ${booking.notes || 'None provided'}
+                  ${booking.notes || 'Nenhuma informada'}
                 </div>
               </div>
 
@@ -163,13 +163,13 @@ export const EmailDispatchService = {
           <tr>
             <td style="background-color: #242424; border-top: 1px solid #333333; padding: 18px 24px; text-align: center;">
               <div style="color: #E0E0E0; font-size: 12.5px; margin-bottom: 8px; font-weight: 500;">
-                Aura Estates International – Private Client Advisory
+                Aura Consultoria Imobiliária – Atendimento Exclusivo
               </div>
               <div style="font-size: 12px; color: #9CA3AF;">
                 ${icons.fb}${icons.ig}${icons.yt}
-                <a href="#" style="color: #B8B8B8; text-decoration: underline;">Website</a>
+                <a href="#" style="color: #B8B8B8; text-decoration: underline;">Site Oficial</a>
                 <span style="margin: 0 4px; color: #686868;">|</span>
-                <a href="#" style="color: #B8B8B8; text-decoration: underline;">Privacy Policy</a>
+                <a href="#" style="color: #B8B8B8; text-decoration: underline;">Política de Privacidade</a>
               </div>
             </td>
           </tr>
@@ -192,15 +192,15 @@ export const EmailDispatchService = {
     const agent = StorageService.getAgentById(booking.agentId);
     const formattedDate = formatDateString(booking.date);
     const agentName = agent ? agent.name : 'Alexandra Vance';
-    const agentPhone = agent ? agent.phone : '+1 (310) 849-2201';
-    const agentEmail = agent ? agent.email : 'alexandra.vance@auraestates.com';
+    const agentPhone = agent ? agent.phone : '+55 (11) 98849-2201';
+    const agentEmail = agent ? agent.email : 'alexandra.vance@auraimoveis.com.br';
     const refCode = booking.id.slice(0, 8).toUpperCase();
 
     const fullLocation = property 
       ? `${property.location.address}, ${property.location.city}, ${property.location.state}`
-      : '9410 Loma Vista Drive, Beverly Hills, CA';
+      : 'Av. Brigadeiro Faria Lima, 3477, São Paulo, SP';
 
-    const subject = `AURA ESTATES: Booking Confirmation (#${refCode})`;
+    const subject = `AURA IMÓVEIS: Confirmação de Visita (#${refCode})`;
 
     // 1. Resend API (100% Custom HTML matching the image)
     const resendApiKey = (import.meta as any).env?.VITE_RESEND_API_KEY || localStorage.getItem('aura_resend_api_key');
@@ -214,7 +214,7 @@ export const EmailDispatchService = {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: 'Aura Estates <onboarding@resend.dev>',
+            from: 'Aura Imóveis <onboarding@resend.dev>',
             to: [booking.clientEmail],
             subject: subject,
             html: htmlContent
@@ -225,7 +225,7 @@ export const EmailDispatchService = {
           return {
             success: true,
             provider: 'resend',
-            message: 'Luxury confirmation email delivered via Resend!',
+            message: 'E-mail de confirmação enviado via Resend!',
             recipient: booking.clientEmail
           };
         } else {
@@ -249,13 +249,13 @@ export const EmailDispatchService = {
           _subject: subject,
           _template: 'box',
           _captcha: 'false',
-          'Property': `${booking.propertyTitle}\n📍 ${fullLocation}`,
-          'Date & Time': `🗓️ ${formattedDate}\n🕒 ${booking.timeSlot} (45-Minute Private Session)`,
-          'Client': booking.clientName,
-          'Reference Code': `#${refCode}`,
-          'Your Dedicated Advisor': `${agentName} (Senior Partner)\n${agentPhone} | ${agentEmail}`,
-          'Arrival & Security Protocol': 'Valet service and security gate clearance have been pre-authorized. Please arrive 5 minutes prior to your scheduled appointment.',
-          'Special Requests': booking.notes || 'None provided'
+          'Imóvel': `${booking.propertyTitle}\n📍 ${fullLocation}`,
+          'Data & Horário': `🗓️ ${formattedDate}\n🕒 ${booking.timeSlot} (Sessão Privativa de 45 Minutos)`,
+          'Cliente': booking.clientName,
+          'Código de Referência': `#${refCode}`,
+          'Corretor Responsável': `${agentName} (Consultor Sênior)\n${agentPhone} | ${agentEmail}`,
+          'Protocolo de Chegada & Segurança': 'O acesso na portaria foi pré-autorizado. Por favor, chegue com 5 minutos de antecedência ao horário agendado.',
+          'Observações Especiais': booking.notes || 'Nenhuma informada'
         })
       });
 
@@ -263,7 +263,7 @@ export const EmailDispatchService = {
         return {
           success: true,
           provider: 'formsubmit',
-          message: 'Confirmation email sent to inbox!',
+          message: 'E-mail de confirmação enviado para sua caixa de entrada!',
           recipient: booking.clientEmail
         };
       }
@@ -275,7 +275,7 @@ export const EmailDispatchService = {
     return {
       success: true,
       provider: 'simulated',
-      message: 'Booking confirmation recorded in audit log',
+      message: 'Confirmação de agendamento registrada no histórico',
       recipient: booking.clientEmail
     };
   }

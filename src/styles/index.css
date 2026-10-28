@@ -1,62 +1,110 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+}
+
 /* ==========================================================================
-   AURA ESTATES - LUXURY REAL ESTATE DESIGN SYSTEM
+   EDITORIAL REAL ESTATE DESIGN SYSTEM (Inspirado no estilo editorial claro)
    ========================================================================== */
 
 :root {
-  /* Color Palette */
-  --bg-darkest: #060A12;
-  --bg-dark: #0B1323;
-  --bg-card: rgba(15, 25, 45, 0.75);
-  --bg-card-hover: rgba(22, 36, 64, 0.85);
-  --bg-glass: rgba(11, 19, 35, 0.7);
-  --bg-glass-modal: rgba(7, 11, 20, 0.92);
+  /* Shadcn / Cult UI Theme Tokens — Editorial Warm Alabaster, Charcoal & Sage */
+  --background: #FBFBF9;
+  --foreground: #1F1F1C;
+  --card: #FFFFFF;
+  --card-foreground: #1F1F1C;
+  --primary: #22221E;
+  --primary-foreground: #FBFBF9;
+  --secondary: #E8ECE0;
+  --secondary-foreground: #1F1F1C;
+  --muted: #F3F1EB;
+  --muted-foreground: #5F5E58;
+  --border: #E4E1D7;
+  --ring: #22221E;
 
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-gold: rgba(197, 168, 128, 0.25);
-  --border-gold-hover: rgba(197, 168, 128, 0.6);
+  /* Editorial Accent Surfaces (Bento / Feature Cards da imagem de referência) */
+  --editorial-cream: #F3F1EB;
+  --editorial-sage: #98A67C;
+  --editorial-sage-light: #E8ECE0;
+  --editorial-sage-dark: #4A593D;
+  --editorial-sky: #9FB2BF;
+  --editorial-sky-light: #E9EFF3;
+  --editorial-charcoal: #2B2B27;
+  --editorial-ink: #1F1F1C;
 
-  --gold-primary: #C5A880;
-  --gold-light: #E5D5C0;
-  --gold-dark: #9E825D;
-  --gold-gradient: linear-gradient(135deg, #DFCAAA 0%, #C5A880 50%, #A3865E 100%);
+  /* System Tokens Mapped to Editorial Light Aesthetic */
+  --bg-darkest: #FBFBF9;
+  --bg-dark: #F3F1EB;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FAF9F5;
+  --bg-glass: rgba(255, 255, 255, 0.92);
+  --bg-glass-modal: #FFFFFF;
 
-  --text-main: #F3F4F6;
-  --text-muted: #9CA3AF;
-  --text-dim: #6B7280;
-  --text-gold: #DFC7A5;
+  --border-subtle: rgba(31, 31, 28, 0.08);
+  --border-gold: #E2DFD5;
+  --border-gold-hover: #22221E;
 
-  --status-confirmed: #10B981;
-  --status-pending: #F59E0B;
-  --status-cancelled: #EF4444;
-  --status-rescheduled: #6366F1;
+  --gold-primary: #4A593D;
+  --gold-light: #22221E;
+  --gold-dark: #333F2A;
+  --gold-gradient: #22221E;
 
-  /* Typography */
-  --font-serif: 'Cinzel', Georgia, serif;
+  --text-main: #1F1F1C;
+  --text-muted: #5F5E58;
+  --text-dim: #85837B;
+  --text-gold: #3E4D32;
+
+  --status-confirmed: #2E6F40;
+  --status-pending: #B45309;
+  --status-cancelled: #DC2626;
+  --status-rescheduled: #4338CA;
+
+  /* Typography — Editorial High-Contrast Serif + Clean Geometric Sans */
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 
-  /* Transitions & Shadows */
+  /* Transitions & Soft Editorial Shadows */
   --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.35);
-  --shadow-gold: 0 8px 32px rgba(197, 168, 128, 0.15);
-  --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --shadow-subtle: 0 2px 12px rgba(31, 31, 28, 0.05), 0 1px 2px rgba(31, 31, 28, 0.04);
+  --shadow-gold: 0 12px 32px rgba(31, 31, 28, 0.09);
+  --shadow-elevated: 0 24px 60px rgba(31, 31, 28, 0.14);
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
   --radius-full: 9999px;
 }
 
-/* Base Resets */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: var(--font-serif);
+    letter-spacing: -0.025em;
+    font-weight: 500;
+  }
 }
 
 html {
   font-family: var(--font-sans);
-  background-color: var(--bg-darkest);
+  background-color: var(--background);
   color: var(--text-main);
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
@@ -64,9 +112,7 @@ html {
 
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at 15% 10%, rgba(197, 168, 128, 0.05) 0%, transparent 45%),
-              radial-gradient(circle at 85% 60%, rgba(30, 58, 102, 0.12) 0%, transparent 50%),
-              var(--bg-darkest);
+  background-color: var(--background);
   color: var(--text-main);
   overflow-x: hidden;
   line-height: 1.55;
@@ -78,33 +124,25 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-darkest);
+  background: #F3F1EB;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(197, 168, 128, 0.25);
+  background: #C7C3B8;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gold-primary);
+  background: #22221E;
 }
 
-/* Typography Helpers */
-h1, h2, h3, h4, .font-serif {
-  font-family: var(--font-serif);
-  letter-spacing: 0.02em;
-}
-
+/* Editorial Typography */
 .gold-gradient-text {
-  background: var(--gold-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #4A593D;
+  font-style: italic;
 }
 
-/* Glassmorphism Classes */
+/* Editorial Cards & Panels */
 .glass-panel {
   background: var(--bg-card);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border-gold);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-subtle);
@@ -112,18 +150,18 @@ h1, h2, h3, h4, .font-serif {
 }
 
 .glass-panel:hover {
-  border-color: var(--border-gold-hover);
+  border-color: #C9C5B9;
   box-shadow: var(--shadow-gold);
 }
 
 /* Container */
 .container {
   width: 100%;
-  max-width: 1280px;
+  max-width: 1240px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 /* Utility Animations */
@@ -133,8 +171,8 @@ h1, h2, h3, h4, .font-serif {
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 15px rgba(197, 168, 128, 0.2); }
-  50% { box-shadow: 0 0 25px rgba(197, 168, 128, 0.45); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 89, 61, 0.15); }
+  50% { box-shadow: 0 0 0 6px rgba(74, 89, 61, 0.08); }
 }
 
 .animate-fade-in {
@@ -153,4 +191,3 @@ h1, h2, h3, h4, .font-serif {
 .animate-spin {
   animation: spin 0.9s linear infinite;
 }
-

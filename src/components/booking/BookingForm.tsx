@@ -24,13 +24,13 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!formData.clientName.trim() || formData.clientName.trim().length < 2) {
-      errs.clientName = 'Please enter your full name';
+      errs.clientName = 'Por favor, informe seu nome completo';
     }
     if (!formData.clientEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.clientEmail)) {
-      errs.clientEmail = 'Please provide a valid email address for confirmation';
+      errs.clientEmail = 'Por favor, informe um e-mail válido para confirmação';
     }
     if (!formData.clientPhone.trim() || formData.clientPhone.trim().length < 8) {
-      errs.clientPhone = 'Please provide a valid phone number';
+      errs.clientPhone = 'Por favor, informe um número de telefone válido';
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -61,7 +61,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
         marginBottom: '14px'
       }}>
         <User size={16} />
-        <span>3. Visitor Contact Details</span>
+        <span>3. Dados de Contato do Visitante</span>
       </div>
 
       {/* Loading feedback banner when submitting */}
@@ -92,10 +92,10 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#FFF', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>Dispatching email confirmation...</span>
+              <span>Enviando confirmação por e-mail...</span>
             </div>
             <div style={{ fontSize: '0.78rem', color: 'var(--gold-light)', marginTop: '2px' }}>
-              Registering viewing appointment and sending confirmation to <strong>{formData.clientEmail || 'your email'}</strong>. Please wait.
+              Registrando o agendamento da visita e enviando confirmação para <strong>{formData.clientEmail || 'seu e-mail'}</strong>. Aguarde.
             </div>
           </div>
         </div>
@@ -108,7 +108,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
       }}>
         {/* Full Name */}
         <div className="form-group">
-          <label className="form-label">Full Name *</label>
+          <label className="form-label">Nome Completo *</label>
           <div style={{ position: 'relative' }}>
             <User size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
@@ -121,7 +121,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
                 borderColor: errors.clientName ? '#EF4444' : undefined,
                 ...inputDisabledStyle
               }}
-              placeholder="e.g. Lady Eleanor Vance"
+              placeholder="Ex: Carlos Eduardo Mendes"
               value={formData.clientName}
               onChange={e => setFormData({ ...formData, clientName: e.target.value })}
             />
@@ -131,7 +131,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
 
         {/* Email */}
         <div className="form-group">
-          <label className="form-label">Email Address (For Instant Confirmation) *</label>
+          <label className="form-label">E-mail (Para Confirmação Imediata) *</label>
           <div style={{ position: 'relative' }}>
             <Mail size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
@@ -144,7 +144,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
                 borderColor: errors.clientEmail ? '#EF4444' : undefined,
                 ...inputDisabledStyle
               }}
-              placeholder="name@domain.com"
+              placeholder="nome@dominio.com.br"
               value={formData.clientEmail}
               onChange={e => setFormData({ ...formData, clientEmail: e.target.value })}
             />
@@ -154,7 +154,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
 
         {/* Phone */}
         <div className="form-group">
-          <label className="form-label">Phone Number *</label>
+          <label className="form-label">Telefone / WhatsApp *</label>
           <div style={{ position: 'relative' }}>
             <Phone size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
@@ -167,7 +167,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
                 borderColor: errors.clientPhone ? '#EF4444' : undefined,
                 ...inputDisabledStyle
               }}
-              placeholder="+1 (555) 000-0000"
+              placeholder="(11) 98765-4321"
               value={formData.clientPhone}
               onChange={e => setFormData({ ...formData, clientPhone: e.target.value })}
             />
@@ -177,7 +177,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
 
         {/* Special Requests / Notes */}
         <div className="form-group">
-          <label className="form-label">Special Requests / Private Notes (Optional)</label>
+          <label className="form-label">Observações / Solicitações Especiais (Opcional)</label>
           <div style={{ position: 'relative' }}>
             <MessageSquare size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
@@ -188,7 +188,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
                 paddingLeft: '38px',
                 ...inputDisabledStyle
               }}
-              placeholder="e.g. Arriving with personal architect"
+              placeholder="Ex: Irei acompanhado do meu arquiteto"
               value={formData.notes}
               onChange={e => setFormData({ ...formData, notes: e.target.value })}
             />
@@ -206,7 +206,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
           <ShieldCheck size={14} color="var(--gold-primary)" />
-          <span>Strict client privacy guaranteed. Instant confirmation email dispatched.</span>
+          <span>Sigilo absoluto garantido. E-mail de confirmação enviado imediatamente.</span>
         </div>
 
         <button
@@ -228,10 +228,10 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
           {isSubmitting ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              <span>Securing Viewing Window...</span>
+              <span>Reservando Horário...</span>
             </>
           ) : (
-            'Confirm Private Viewing'
+            'Confirmar Visita Presencial'
           )}
         </button>
       </div>

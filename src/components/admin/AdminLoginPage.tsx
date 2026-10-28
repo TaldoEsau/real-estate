@@ -80,19 +80,18 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
             width: '56px',
             height: '56px',
             borderRadius: '14px',
-            background: 'var(--gold-gradient)',
+            background: '#22221E',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 24px rgba(197, 168, 128, 0.35)',
             marginBottom: '16px'
           }}>
-            <Shield size={28} color="#0B1323" strokeWidth={2.2} />
+            <Shield size={28} color="#FBFBF9" strokeWidth={2} />
           </div>
 
           <div style={{
             fontSize: '0.75rem',
-            color: 'var(--gold-light)',
+            color: '#4A593D',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.12em',
@@ -102,9 +101,9 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
           </div>
 
           <h1 style={{
-            fontSize: '1.65rem',
-            fontWeight: 700,
-            color: '#FFF',
+            fontSize: '1.85rem',
+            fontWeight: 500,
+            color: 'var(--text-main)',
             margin: '0 0 8px 0',
             fontFamily: 'var(--font-serif)'
           }}>

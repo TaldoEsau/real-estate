@@ -4,18 +4,18 @@ export const SEED_AGENTS: Agent[] = [
   {
     id: 'a1111111-1111-1111-1111-111111111111',
     name: 'Alexandra Vance',
-    email: 'alexandra.vance@auraestates.com',
+    email: 'alexandra.vance@auraimoveis.com.br',
     phone: '+55 (11) 98849-2201',
-    role: 'Senior Luxury Specialist & Partner',
+    role: 'Especialista Sênior em Alto Padrão & Sócia',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
     bio: 'Mais de 12 anos de experiência em intermediação de propriedades de alto padrão e condomínios fechados.'
   },
   {
     id: 'a2222222-2222-2222-2222-222222222222',
     name: 'Julian Montgomery',
-    email: 'julian.m@auraestates.com',
-    phone: '+55 (11) 9650-8840',
-    role: 'Principal Architectural Advisor',
+    email: 'julian.m@auraimoveis.com.br',
+    phone: '+55 (11) 99650-8840',
+    role: 'Consultor Principal de Arquitetura & Investimentos',
     avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80',
     bio: 'Especialista em coberturas, lofts contemporâneos e consultoria de investimentos imobiliários.'
   }
@@ -25,8 +25,8 @@ export const SEED_PROPERTIES: Property[] = [
   {
     id: 'p1111111-1111-1111-1111-111111111111',
     code: 'CS1042',
-    title: 'The Skyline Villa & Spa Privativo',
-    slug: 'the-skyline-villa-spa-privativo',
+    title: 'Mansão Panorâmica Morumbi & Spa Privativo',
+    slug: 'mansao-panoramica-morumbi-spa-privativo',
     description: 'Mansão contemporânea com vista panorâmica definitiva. Integração total entre os ambientes, piscina com borda infinita de 18 metros, adega climatizada e automação residencial completa.',
     price: 4250000,
     rentalPrice: 18000,
@@ -209,8 +209,8 @@ export const SEED_PROPERTIES: Property[] = [
     amenities: [
       'Piscina Aquecida com Raia de 25m',
       'Varanda com Churrasqueira',
-      'Academia Reebok Fitness',
-      'Valet Parking para Visitantes',
+      'Academia Completa Equipada',
+      'Estacionamento com Manobrista',
       'Fechadura Biométrica'
     ],
     featuredImage: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
@@ -225,8 +225,8 @@ export const SEED_PROPERTIES: Property[] = [
   {
     id: 'p5555555-5555-5555-5555-555555555555',
     code: 'TH5020',
-    title: 'Townhouse Exclusiva em Vila Charmosa',
-    slug: 'townhouse-exclusiva-vila-charmosa',
+    title: 'Casa de Vila Exclusiva em Condomínio Fechado',
+    slug: 'casa-de-vila-exclusiva-condominio-fechado',
     description: 'Residência sofisticada em vila fechada com segurança privada. Quatro pavimentos com piso em peroba-do-campo, lareiras a lenha e jardim privativo de inverno.',
     price: 5400000,
     rentalPrice: 28000,
@@ -259,7 +259,7 @@ export const SEED_PROPERTIES: Property[] = [
       'Lareira a Lenha',
       'Adega Subterrânea',
       'Marcenaria Artesanal',
-      'Rooftop com Vista Urbana'
+      'Terraço Panorâmico com Vista Urbana'
     ],
     featuredImage: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
     gallery: [

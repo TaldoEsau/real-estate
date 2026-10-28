@@ -43,16 +43,16 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Bell size={20} color="var(--gold-primary)" />
               <h3 style={{ fontSize: '1.15rem', color: '#FFF' }}>
-                Notification & Email Audit Log
+                Registro de Notificações & E-mails
               </h3>
             </div>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Live simulation of client confirmation emails and agent alerts
+              Histórico de e-mails de confirmação de clientes e alertas de corretores
             </p>
           </div>
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Fechar"
             style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
           >
             <X size={20} />
@@ -64,8 +64,8 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
           {notifications.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
               <Mail size={40} color="var(--border-gold)" style={{ margin: '0 auto 12px auto' }} />
-              <p>No notifications generated yet.</p>
-              <p style={{ fontSize: '0.8rem', marginTop: '6px' }}>Book a viewing on any property to see automatic client confirmation & agent alerts.</p>
+              <p>Nenhuma notificação gerada ainda.</p>
+              <p style={{ fontSize: '0.8rem', marginTop: '6px' }}>Agende uma visita em qualquer imóvel para visualizar a confirmação automática do cliente e o alerta do corretor.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -93,7 +93,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
                   }}>
                     <span className={`badge ${item.recipientRole === 'client' ? 'badge-gold' : 'badge-status-confirmed'}`}>
                       {item.recipientRole === 'client' ? <User size={10} /> : <Shield size={10} />}
-                      {item.recipientRole === 'client' ? 'Client Email' : 'Agent Alert'}
+                      {item.recipientRole === 'client' ? 'E-mail ao Cliente' : 'Alerta ao Corretor'}
                     </span>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
                       {formatDateTime(item.sentAt)}
@@ -111,9 +111,9 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
                     fontSize: '0.75rem',
                     color: 'var(--text-muted)'
                   }}>
-                    <span>To: {item.recipientEmail}</span>
+                    <span>Para: {item.recipientEmail}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--gold-light)' }}>
-                      <Eye size={12} /> Click to View HTML Email
+                      <Eye size={12} /> Clique para Ver E-mail HTML
                     </span>
                   </div>
                 </div>
@@ -138,13 +138,13 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
             <div className="modal-header">
               <div>
                 <span className="badge badge-gold" style={{ marginBottom: '4px' }}>
-                  Simulated Transactional Email
+                  E-mail Transacional
                 </span>
                 <h4 style={{ color: '#FFF', fontSize: '1rem', marginTop: '2px' }}>
                   {selectedNotification.subject}
                 </h4>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                  Recipient: <strong>{selectedNotification.recipientEmail}</strong>
+                  Destinatário: <strong>{selectedNotification.recipientEmail}</strong>
                 </div>
               </div>
               <button
@@ -166,7 +166,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
                 onClick={() => setSelectedNotification(null)}
                 className="btn btn-gold"
               >
-                Close Preview
+                Fechar Prévia
               </button>
             </div>
           </div>

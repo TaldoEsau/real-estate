@@ -13,7 +13,7 @@ interface TenantContextType {
 const DEFAULT_TENANT: Tenant = {
   id: 't1111111-1111-1111-1111-111111111111',
   slug: 'aura-imoveis',
-  name: 'Aura Real Estate Advisory',
+  name: 'Aura Consultoria Imobiliária',
   legalName: 'Aura Negócios Imobiliários Ltda',
   documentNumber: '12.345.678/0001-90',
   email: 'contato@auraimoveis.com.br',
@@ -49,7 +49,7 @@ const DEFAULT_SETTINGS: TenantSettings = {
     linkedin: 'https://linkedin.com',
     whatsapp: '5511987654321'
   },
-  metaTitle: 'Aura Real Estate | Plataforma Imobiliária',
+  metaTitle: 'Aura Imóveis | Consultoria Imobiliária de Alto Padrão',
   metaDescription: 'Encontre imóveis de alto padrão para venda e locação com agendamento imediato.',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
@@ -67,12 +67,36 @@ const TenantContext = createContext<TenantContextType | undefined>(undefined);
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tenant, setTenant] = useState<Tenant>(() => {
     const cached = localStorage.getItem('moliaria_active_tenant');
-    return cached ? JSON.parse(cached) : DEFAULT_TENANT;
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed.name === 'Aura Real Estate Advisory' || parsed.name === 'Aura Estates') {
+          parsed.name = DEFAULT_TENANT.name;
+          localStorage.setItem('moliaria_active_tenant', JSON.stringify(parsed));
+        }
+        return parsed;
+      } catch {
+        return DEFAULT_TENANT;
+      }
+    }
+    return DEFAULT_TENANT;
   });
 
   const [settings, setSettings] = useState<TenantSettings>(() => {
     const cached = localStorage.getItem('moliaria_tenant_settings');
-    return cached ? JSON.parse(cached) : DEFAULT_SETTINGS;
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed.metaTitle && parsed.metaTitle.includes('Aura Real Estate')) {
+          parsed.metaTitle = DEFAULT_SETTINGS.metaTitle;
+          localStorage.setItem('moliaria_tenant_settings', JSON.stringify(parsed));
+        }
+        return parsed;
+      } catch {
+        return DEFAULT_SETTINGS;
+      }
+    }
+    return DEFAULT_SETTINGS;
   });
 
   const [categories, setCategories] = useState<PropertyCategory[]>(DEFAULT_CATEGORIES);

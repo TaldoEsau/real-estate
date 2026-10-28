@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Navigation, Compass, ExternalLink, Layers, Car } from 'lucide-react';
+import { MapPin, Navigation, Compass, ExternalLink, Layers, Car, CheckCircle2 } from 'lucide-react';
 import { PropertyLocation } from '../../types';
 
 interface PropertyMapProps {
@@ -7,16 +7,37 @@ interface PropertyMapProps {
   propertyTitle: string;
 }
 
+export function resolveGoogleMapsQuery(location: PropertyLocation): string {
+  if (location.useExactCoords && typeof location.lat === 'number' && typeof location.lng === 'number') {
+    return `${location.lat},${location.lng}`;
+  }
+  if (location.mapQuery && location.mapQuery.trim()) {
+    return location.mapQuery.trim();
+  }
+  const streetPart = [location.address, location.number].filter(Boolean).join(', ');
+  const neighborhoodPart = location.neighborhood ? ` - ${location.neighborhood}` : '';
+  const cityStatePart = [location.city, location.state].filter(Boolean).join(' - ');
+  const zipPart = location.zipCode ? `, ${location.zipCode}` : '';
+  return `${streetPart}${neighborhoodPart}, ${cityStatePart}${zipPart}`;
+}
+
 export const PropertyMap: React.FC<PropertyMapProps> = ({ location, propertyTitle }) => {
   const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
 
-  const fullAddress = `${location.address}, ${location.city}, ${location.state} ${location.zipCode || ''}`;
-  
+  const displayAddress = [
+    [location.address, location.number].filter(Boolean).join(', '),
+    location.neighborhood,
+    `${location.city} - ${location.state}`,
+    location.zipCode
+  ].filter(Boolean).join(' • ');
+
+  const resolvedQuery = resolveGoogleMapsQuery(location);
+
   // Google Maps embed URL
-  const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(fullAddress)}&t=${mapType === 'satellite' ? 'k' : 'm'}&z=15&ie=UTF8&iwloc=&output=embed`;
-  
+  const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(resolvedQuery)}&t=${mapType === 'satellite' ? 'k' : 'm'}&z=16&ie=UTF8&iwloc=&output=embed`;
+
   // Direct Google Maps link for directions
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress)}`;
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(resolvedQuery)}`;
 
   return (
     <div className="glass-panel" style={{ padding: '24px', overflow: 'hidden' }}>
@@ -34,20 +55,36 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({ location, propertyTitl
             width: '32px',
             height: '32px',
             borderRadius: 'var(--radius-sm)',
-            background: 'var(--gold-gradient)',
+            background: '#22221E',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 2px 10px rgba(197, 168, 128, 0.3)'
           }}>
-            <MapPin size={18} color="#0B1323" strokeWidth={2.4} />
+            <MapPin size={18} color="#FBFBF9" strokeWidth={2.2} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.2rem', color: '#FFF', margin: 0 }}>
-              Google Maps Location
+            <h3 style={{ fontSize: '1.35rem', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>Localização no Google Maps</span>
+              {location.isLocationConfirmed && (
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '0.68rem',
+                  fontFamily: 'var(--font-sans)',
+                  padding: '2px 8px',
+                  borderRadius: '999px',
+                  background: '#E8ECE0',
+                  border: '1px solid #CFD8C0',
+                  color: '#2E6F40',
+                  fontWeight: 600
+                }}>
+                  <CheckCircle2 size={11} /> Verificada
+                </span>
+              )}
             </h3>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Interactive real-time mapping & navigation
+              Mapa interativo em tempo real e navegação por GPS
             </span>
           </div>
         </div>
@@ -55,13 +92,14 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({ location, propertyTitl
         {/* View Switcher & External Directions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
+            type="button"
             onClick={() => setMapType(mapType === 'roadmap' ? 'satellite' : 'roadmap')}
             className="btn btn-outline btn-sm"
             style={{ fontSize: '0.75rem' }}
-            title="Toggle Satellite / Street View"
+            title="Alternar entre Mapa e Satélite"
           >
             <Layers size={13} color="var(--gold-primary)" />
-            <span>{mapType === 'roadmap' ? 'Satellite View' : 'Map View'}</span>
+            <span>{mapType === 'roadmap' ? 'Visão Satélite' : 'Visão Mapa'}</span>
           </button>
 
           <a
@@ -72,7 +110,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({ location, propertyTitl
             style={{ textDecoration: 'none', fontSize: '0.75rem' }}
           >
             <Car size={13} />
-            <span>Get Directions</span>
+            <span>Traçar Rota</span>
             <ExternalLink size={12} />
           </a>
         </div>
@@ -80,8 +118,8 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({ location, propertyTitl
 
       {/* Address Bar */}
       <div style={{
-        background: 'rgba(11, 19, 35, 0.8)',
-        border: '1px solid var(--border-gold)',
+        background: '#F3F1EB',
+        border: '1px solid #E4E1D7',
         borderRadius: 'var(--radius-sm)',
         padding: '12px 16px',
         marginBottom: '16px',
@@ -92,17 +130,19 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({ location, propertyTitl
         gap: '10px'
       }}>
         <div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--gold-light)', textTransform: 'uppercase', fontWeight: 700 }}>
-            Confirmed Address
+          <div style={{ fontSize: '0.7rem', color: '#4A593D', textTransform: 'uppercase', fontWeight: 700 }}>
+            Endereço do Imóvel
           </div>
-          <div style={{ fontSize: '0.9rem', color: '#FFF', fontWeight: 600 }}>
-            {location.address}, {location.city}, {location.state} {location.zipCode}
+          <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 600 }}>
+            {displayAddress}
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
           <Navigation size={13} color="var(--gold-primary)" />
-          <span>GPS: {location.lat.toFixed(4)}° N, {Math.abs(location.lng).toFixed(4)}° W</span>
+          <span>
+            GPS: {Number(location.lat || 0).toFixed(5)}°, {Number(location.lng || 0).toFixed(5)}°
+          </span>
         </div>
       </div>
 
@@ -139,15 +179,15 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({ location, propertyTitl
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Compass size={14} color="var(--gold-primary)" />
-          <span>Private Jet Center / Airport: ~20 mins</span>
+          <span>Localização revisada pela imobiliária</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Compass size={14} color="var(--gold-primary)" />
-          <span>Premier Fine Dining: ~5 mins</span>
+          <span>Acesso facilitado e rota integrada ao Google Maps</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Compass size={14} color="var(--gold-primary)" />
-          <span>Private Security Patrol Area</span>
+          <span>Visitas presenciais com acompanhamento</span>
         </div>
       </div>
     </div>

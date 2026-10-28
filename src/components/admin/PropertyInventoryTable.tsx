@@ -39,7 +39,7 @@ export const PropertyInventoryTable: React.FC<PropertyInventoryTableProps> = ({
     house: 'Casa',
     villa: 'Condomínio',
     penthouse: 'Cobertura',
-    townhouse: 'Townhouse',
+    townhouse: 'Casa de Vila',
     commercial: 'Comercial'
   };
 
@@ -95,7 +95,7 @@ export const PropertyInventoryTable: React.FC<PropertyInventoryTableProps> = ({
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '780px' }}>
           <thead>
             <tr style={{
-              background: 'rgba(11, 19, 35, 0.9)',
+              background: '#F3F1EB',
               borderBottom: '1px solid var(--border-gold)',
               fontSize: '0.75rem',
               textTransform: 'uppercase',
@@ -156,16 +156,16 @@ export const PropertyInventoryTable: React.FC<PropertyInventoryTableProps> = ({
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{
-                            background: 'rgba(197, 168, 128, 0.15)',
-                            color: 'var(--gold-light)',
-                            padding: '1px 5px',
-                            borderRadius: '3px',
+                            background: '#E8ECE0',
+                            color: '#36442B',
+                            padding: '1px 6px',
+                            borderRadius: '4px',
                             fontSize: '0.7rem',
                             fontWeight: 700
                           }}>
                             {property.code || 'REF'}
                           </span>
-                          <span style={{ fontWeight: 600, color: '#FFF', fontSize: '0.9rem' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.9rem' }}>
                             {property.title}
                           </span>
                         </div>
@@ -192,7 +192,7 @@ export const PropertyInventoryTable: React.FC<PropertyInventoryTableProps> = ({
                   {/* Price */}
                   <td style={{ padding: '16px 14px', fontSize: '0.85rem' }}>
                     {property.price > 0 && (
-                      <div style={{ fontWeight: 700, color: '#FFF' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
                         {formatCurrency(property.price)}
                       </div>
                     )}

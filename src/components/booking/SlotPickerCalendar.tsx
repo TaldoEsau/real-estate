@@ -27,9 +27,9 @@ export const SlotPickerCalendar: React.FC<SlotPickerCalendarProps> = ({
       d.setDate(now.getDate() + i);
 
       const dateStr = d.toISOString().split('T')[0];
-      const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(d);
+      const dayName = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' }).format(d).replace('.', '');
       const dayNum = d.getDate();
-      const monthName = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d);
+      const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(d).replace('.', '');
 
       list.push({ dateStr, dayName, dayNum, monthName });
     }
@@ -63,7 +63,7 @@ export const SlotPickerCalendar: React.FC<SlotPickerCalendarProps> = ({
           fontWeight: 600
         }}>
           <CalendarIcon size={16} />
-          <span>1. Select Viewing Date</span>
+          <span>1. Selecione a Data da Visita</span>
         </div>
 
         <div style={{
@@ -77,26 +77,27 @@ export const SlotPickerCalendar: React.FC<SlotPickerCalendarProps> = ({
             return (
               <button
                 key={d.dateStr}
+                type="button"
                 onClick={() => onSelectDate(d.dateStr)}
                 style={{
                   minWidth: '68px',
                   padding: '10px 8px',
                   borderRadius: 'var(--radius-sm)',
-                  border: isSelected ? '2px solid var(--gold-primary)' : '1px solid var(--border-gold)',
-                  background: isSelected ? 'rgba(197, 168, 128, 0.15)' : 'rgba(11, 19, 35, 0.7)',
-                  color: isSelected ? '#FFF' : 'var(--text-muted)',
+                  border: isSelected ? '2px solid #22221E' : '1px solid #E4E1D7',
+                  background: isSelected ? '#22221E' : '#F3F1EB',
+                  color: isSelected ? '#FBFBF9' : 'var(--text-main)',
                   cursor: 'pointer',
                   textAlign: 'center',
                   transition: 'all 0.18s ease'
                 }}
               >
-                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: isSelected ? 'var(--gold-light)' : 'var(--text-dim)' }}>
+                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: isSelected ? '#E8ECE0' : 'var(--text-muted)' }}>
                   {d.dayName}
                 </div>
                 <div style={{ fontSize: '1.2rem', fontWeight: 700, margin: '2px 0' }}>
                   {d.dayNum}
                 </div>
-                <div style={{ fontSize: '0.65rem' }}>
+                <div style={{ fontSize: '0.65rem', textTransform: 'capitalize' }}>
                   {d.monthName}
                 </div>
               </button>
@@ -117,7 +118,7 @@ export const SlotPickerCalendar: React.FC<SlotPickerCalendarProps> = ({
           fontWeight: 600
         }}>
           <Clock size={16} />
-          <span>2. Select 45-Min Viewing Window</span>
+          <span>2. Selecione o Horário (Sessão de 45 min)</span>
         </div>
 
         {slotData.isBlackedOut ? (
@@ -133,11 +134,11 @@ export const SlotPickerCalendar: React.FC<SlotPickerCalendarProps> = ({
             gap: '8px'
           }}>
             <AlertCircle size={18} />
-            <span>The advisor has marked this date as unavailable for viewings. Please pick another date above.</span>
+            <span>O corretor marcou esta data como indisponível para visitas. Por favor, escolha outra data acima.</span>
           </div>
         ) : slotData.slots.length === 0 ? (
           <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '12px 0' }}>
-            No available time slots for this date.
+            Nenhum horário disponível para esta data.
           </div>
         ) : (
           <div style={{
@@ -150,26 +151,27 @@ export const SlotPickerCalendar: React.FC<SlotPickerCalendarProps> = ({
               return (
                 <button
                   key={slot.timeSlot}
+                  type="button"
                   disabled={!slot.isAvailable}
                   onClick={() => onSelectSlot(slot.timeSlot)}
                   style={{
                     padding: '10px 12px',
                     borderRadius: 'var(--radius-sm)',
                     border: isSelected
-                      ? '2px solid var(--gold-primary)'
+                      ? '2px solid #22221E'
                       : slot.isAvailable
-                        ? '1px solid var(--border-gold)'
-                        : '1px solid rgba(255, 255, 255, 0.05)',
+                        ? '1px solid #E4E1D7'
+                        : '1px solid #EAE7DF',
                     background: isSelected
-                      ? 'rgba(197, 168, 128, 0.2)'
+                      ? '#E8ECE0'
                       : slot.isAvailable
-                        ? 'rgba(15, 25, 45, 0.8)'
-                        : 'rgba(255, 255, 255, 0.02)',
+                        ? '#F3F1EB'
+                        : '#FBFBF9',
                     color: isSelected
-                      ? 'var(--gold-light)'
+                      ? '#1F1F1C'
                       : slot.isAvailable
-                        ? '#FFF'
-                        : 'rgba(255, 255, 255, 0.25)',
+                        ? '#1F1F1C'
+                        : '#B5B2A8',
                     cursor: slot.isAvailable ? 'pointer' : 'not-allowed',
                     fontSize: '0.8rem',
                     fontWeight: isSelected ? 700 : 500,
@@ -181,7 +183,7 @@ export const SlotPickerCalendar: React.FC<SlotPickerCalendarProps> = ({
                   <div>{slot.timeSlot}</div>
                   {!slot.isAvailable && (
                     <div style={{ fontSize: '0.65rem', color: '#EF4444', marginTop: '2px' }}>
-                      Reserved
+                      Reservado
                     </div>
                   )}
                 </button>

@@ -110,7 +110,7 @@ export const BookingService = {
     const targetSlot = slots.find(s => s.timeSlot === params.timeSlot);
 
     if (!targetSlot || !targetSlot.isAvailable) {
-      return { success: false, error: 'This time slot was just booked or is unavailable. Please choose another slot.' };
+      return { success: false, error: 'Este horário acabou de ser reservado ou está indisponível. Por favor, escolha outro horário.' };
     }
 
     const newBooking: BookingRequest = {

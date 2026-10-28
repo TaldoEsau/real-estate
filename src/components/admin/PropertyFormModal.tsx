@@ -4,10 +4,11 @@ import {
   Image, Check, Upload, Trash2, Star, Loader2, Compass,
   Hash, Tag, Layers, Car, CheckSquare, Plus
 } from 'lucide-react';
-import { Property, PropertyType, ListingType, PropertyStatus } from '../../types';
+import { Property, PropertyType, ListingType, PropertyStatus, PropertyLocation } from '../../types';
 import { StorageService } from '../../services/storageService';
 import { uploadPropertyImage } from '../../services/imageUploadService';
 import { generateUUID } from '../../utils/formatters';
+import { LocationMapPicker } from './LocationMapPicker';
 
 interface PropertyFormModalProps {
   propertyToEdit?: Property | null;
@@ -59,6 +60,11 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     city: propertyToEdit?.location.city || 'São Paulo',
     state: propertyToEdit?.location.state || 'SP',
     zipCode: propertyToEdit?.location.zipCode || '',
+    lat: propertyToEdit?.location.lat ?? -23.55052,
+    lng: propertyToEdit?.location.lng ?? -46.633308,
+    mapQuery: propertyToEdit?.location.mapQuery || '',
+    useExactCoords: propertyToEdit?.location.useExactCoords || false,
+    isLocationConfirmed: propertyToEdit?.location.isLocationConfirmed || false,
     bedrooms: propertyToEdit?.specs.bedrooms || 3,
     suites: propertyToEdit?.specs.suites || 1,
     bathrooms: propertyToEdit?.specs.bathrooms || 2,
@@ -209,8 +215,11 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
         city: formData.city,
         state: formData.state,
         zipCode: formData.zipCode,
-        lat: propertyToEdit?.location.lat || -23.55052,
-        lng: propertyToEdit?.location.lng || -46.633308
+        lat: Number(formData.lat) || -23.55052,
+        lng: Number(formData.lng) || -46.633308,
+        mapQuery: formData.mapQuery || undefined,
+        useExactCoords: Boolean(formData.useExactCoords),
+        isLocationConfirmed: Boolean(formData.isLocationConfirmed)
       },
       specs: {
         bedrooms: Number(formData.bedrooms) || 0,
@@ -334,9 +343,9 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   >
                     <option value="apartment">Apartamento</option>
                     <option value="house">Casa</option>
-                    <option value="villa">Casa em Condomínio / Villa</option>
+                    <option value="villa">Casa em Condomínio</option>
                     <option value="penthouse">Cobertura Duplex / Triplex</option>
-                    <option value="townhouse">Townhouse / Sobrado</option>
+                    <option value="townhouse">Casa de Vila / Sobrado</option>
                     <option value="commercial">Comercial</option>
                   </select>
                 </div>
@@ -585,7 +594,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     required
                     className="form-input"
                     value={formData.address}
-                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                    onChange={e => setFormData({ ...formData, address: e.target.value, isLocationConfirmed: false })}
                     placeholder="Rua Haddock Lobo"
                   />
                 </div>
@@ -595,7 +604,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     type="text"
                     className="form-input"
                     value={formData.number}
-                    onChange={e => setFormData({ ...formData, number: e.target.value })}
+                    onChange={e => setFormData({ ...formData, number: e.target.value, isLocationConfirmed: false })}
                     placeholder="1400"
                   />
                 </div>
@@ -609,7 +618,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     required
                     className="form-input"
                     value={formData.neighborhood}
-                    onChange={e => setFormData({ ...formData, neighborhood: e.target.value })}
+                    onChange={e => setFormData({ ...formData, neighborhood: e.target.value, isLocationConfirmed: false })}
                     placeholder="Jardins"
                   />
                 </div>
@@ -620,7 +629,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     required
                     className="form-input"
                     value={formData.city}
-                    onChange={e => setFormData({ ...formData, city: e.target.value })}
+                    onChange={e => setFormData({ ...formData, city: e.target.value, isLocationConfirmed: false })}
                     placeholder="São Paulo"
                   />
                 </div>
@@ -632,7 +641,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     maxLength={2}
                     className="form-input"
                     value={formData.state}
-                    onChange={e => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
+                    onChange={e => setFormData({ ...formData, state: e.target.value.toUpperCase(), isLocationConfirmed: false })}
                     placeholder="SP"
                   />
                 </div>
@@ -642,11 +651,66 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                     type="text"
                     className="form-input"
                     value={formData.zipCode}
-                    onChange={e => setFormData({ ...formData, zipCode: e.target.value })}
+                    onChange={async (e) => {
+                      const val = e.target.value;
+                      setFormData(prev => ({ ...prev, zipCode: val, isLocationConfirmed: false }));
+                      const cleanCep = val.replace(/\D/g, '');
+                      if (cleanCep.length === 8) {
+                        try {
+                          const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+                          const data = await res.json();
+                          if (!data.erro) {
+                            setFormData(prev => ({
+                              ...prev,
+                              address: data.logradouro || prev.address,
+                              neighborhood: data.bairro || prev.neighborhood,
+                              city: data.localidade || prev.city,
+                              state: data.uf || prev.state,
+                              zipCode: val
+                            }));
+                          }
+                        } catch {
+                          // Ignora falha silenciosamente caso offline
+                        }
+                      }
+                    }}
                     placeholder="01414-002"
                   />
                 </div>
               </div>
+
+              {/* Mapa de Confirmação e Correção do Google Maps */}
+              <LocationMapPicker
+                location={{
+                  address: formData.address,
+                  number: formData.number,
+                  neighborhood: formData.neighborhood,
+                  city: formData.city,
+                  state: formData.state,
+                  zipCode: formData.zipCode,
+                  lat: Number(formData.lat),
+                  lng: Number(formData.lng),
+                  mapQuery: formData.mapQuery,
+                  useExactCoords: formData.useExactCoords,
+                  isLocationConfirmed: formData.isLocationConfirmed
+                }}
+                onChange={(updated: Partial<PropertyLocation>) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    ...(updated.address !== undefined ? { address: updated.address } : {}),
+                    ...(updated.number !== undefined ? { number: updated.number } : {}),
+                    ...(updated.neighborhood !== undefined ? { neighborhood: updated.neighborhood } : {}),
+                    ...(updated.city !== undefined ? { city: updated.city } : {}),
+                    ...(updated.state !== undefined ? { state: updated.state } : {}),
+                    ...(updated.zipCode !== undefined ? { zipCode: updated.zipCode } : {}),
+                    ...(updated.lat !== undefined ? { lat: updated.lat } : {}),
+                    ...(updated.lng !== undefined ? { lng: updated.lng } : {}),
+                    ...(updated.mapQuery !== undefined ? { mapQuery: updated.mapQuery } : {}),
+                    ...(updated.useExactCoords !== undefined ? { useExactCoords: updated.useExactCoords } : {}),
+                    ...(updated.isLocationConfirmed !== undefined ? { isLocationConfirmed: updated.isLocationConfirmed } : {})
+                  }));
+                }}
+              />
             </div>
           )}
 

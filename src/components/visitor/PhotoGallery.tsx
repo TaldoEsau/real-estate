@@ -40,7 +40,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images, title }) => 
       }}>
         <img
           src={allImages[currentIndex]}
-          alt={`${title} - view ${currentIndex + 1}`}
+          alt={`${title} - foto ${currentIndex + 1}`}
           style={{
             position: 'absolute',
             top: 0,
@@ -57,7 +57,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images, title }) => 
           <>
             <button
               onClick={handlePrev}
-              aria-label="Previous photo"
+              aria-label="Foto anterior"
               style={{
                 position: 'absolute',
                 left: '16px',
@@ -83,7 +83,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images, title }) => 
 
             <button
               onClick={handleNext}
-              aria-label="Next photo"
+              aria-label="Próxima foto"
               style={{
                 position: 'absolute',
                 right: '16px',
@@ -130,7 +130,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ images, title }) => 
           <button
             onClick={() => setIsLightboxOpen(true)}
             style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', display: 'flex' }}
-            title="Full Screen View"
+            title="Visualizar em Tela Cheia"
           >
             <Maximize size={14} />
           </button>

@@ -1,14 +1,31 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { Property, PropertyFilterState } from '../../types';
 import { FilterBar } from './FilterBar';
 import { PropertyCard } from './PropertyCard';
-import { Sparkles, Building2, CheckCircle2, Sliders } from 'lucide-react';
+import {
+  Sparkles,
+  Building2,
+  CheckCircle2,
+  ShieldCheck,
+  Award,
+  KeyRound,
+  Palmtree,
+  ArrowRight,
+  PhoneCall,
+  Plus,
+} from 'lucide-react';
 import { useTenant } from '../../context/TenantContext';
+import { OrganicButton } from '@/components/ui/organic-button';
+import { VideoPresentationHero, PublicTab } from './VideoPresentationHero';
+import { EmpresaView, ContatoView } from './CompanyInfoSections';
 
 interface PropertyCatalogProps {
   properties: Property[];
   onSelectProperty: (property: Property) => void;
   onBookProperty: (property: Property) => void;
+  activeTab: PublicTab;
+  onSelectTab: (tab: PublicTab) => void;
 }
 
 const STORAGE_FILTER_KEY = 'moliaria_active_filters_v1';
@@ -34,9 +51,11 @@ const DEFAULT_FILTERS: PropertyFilterState = {
 export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
   properties,
   onSelectProperty,
-  onBookProperty
+  onBookProperty,
+  activeTab,
+  onSelectTab,
 }) => {
-  const { tenant, settings } = useTenant();
+  const { tenant } = useTenant();
 
   // Carrega filtros salvos da sessão se existirem
   const [filters, setFilters] = useState<PropertyFilterState>(() => {
@@ -48,6 +67,19 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
     }
     return DEFAULT_FILTERS;
   });
+
+  // Sincroniza filtro transacional automaticamente quando o usuário troca de aba na barra superior
+  useEffect(() => {
+    if (activeTab === 'venda') {
+      setFilters(prev => ({ ...prev, transactionType: 'for_sale' }));
+    } else if (activeTab === 'locacao') {
+      setFilters(prev => ({ ...prev, transactionType: 'for_rent' }));
+    } else if (activeTab === 'temporada') {
+      setFilters(prev => ({ ...prev, transactionType: 'all' }));
+    } else if (activeTab === 'home') {
+      setFilters(prev => ({ ...prev, transactionType: 'all' }));
+    }
+  }, [activeTab]);
 
   // Salva os filtros no sessionStorage a cada alteração
   useEffect(() => {
@@ -108,7 +140,22 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
     return properties.filter(p => {
       if (p.status === 'archived' || p.status === 'draft') return false;
 
-      // Busca por Código do Imóvel (Feature Legada)
+      // Aba Temporada: prioriza casas em condomínio, coberturas ou imóveis com lazer completo
+      if (activeTab === 'temporada') {
+        const isLeisureType =
+          p.propertyType === 'villa' ||
+          p.propertyType === 'house' ||
+          p.propertyType === 'penthouse' ||
+          p.amenities.some(a =>
+            a.toLowerCase().includes('piscina') ||
+            a.toLowerCase().includes('gourmet') ||
+            a.toLowerCase().includes('vista') ||
+            a.toLowerCase().includes('spa')
+          );
+        if (!isLeisureType) return false;
+      }
+
+      // Busca por Código do Imóvel
       if (filters.code && filters.code.trim()) {
         const targetCode = filters.code.trim().toUpperCase();
         const pCode = (p.code || '').toUpperCase();
@@ -134,15 +181,12 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
       // Chaveamento Transacional (Comprar vs Alugar)
       if (filters.transactionType === 'for_sale') {
         if (p.listingType !== 'for_sale' && p.listingType !== 'both') return false;
-        // Filtro de Preço de Venda
         if (filters.maxPrice && p.price > filters.maxPrice) return false;
       } else if (filters.transactionType === 'for_rent') {
         if (p.listingType !== 'for_rent' && p.listingType !== 'both') return false;
-        // Filtro de Valor de Locação
         const rentPrice = p.rentalPrice || 0;
         if (filters.maxPrice && rentPrice > filters.maxPrice) return false;
       } else {
-        // 'all'
         if (filters.maxPrice && p.price > filters.maxPrice) return false;
       }
 
@@ -197,7 +241,6 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
 
       return true;
     }).sort((a, b) => {
-      // Ordenação
       if (filters.sortBy === 'price_asc') {
         const priceA = filters.transactionType === 'for_rent' ? (a.rentalPrice || a.price) : a.price;
         const priceB = filters.transactionType === 'for_rent' ? (b.rentalPrice || b.price) : b.price;
@@ -215,56 +258,114 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
       }
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [properties, filters]);
+  }, [properties, filters, activeTab]);
 
   const handleResetFilters = () => {
     setFilters(DEFAULT_FILTERS);
     sessionStorage.removeItem(STORAGE_FILTER_KEY);
   };
 
-  return (
-    <div className="container" style={{ paddingTop: '40px', paddingBottom: '80px' }}>
-      {/* Hero Header White-label */}
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '6px 14px',
-          borderRadius: '999px',
-          background: 'rgba(197, 168, 128, 0.12)',
-          border: '1px solid rgba(197, 168, 128, 0.3)',
-          color: 'var(--gold-light)',
-          fontSize: '0.75rem',
-          fontWeight: 700,
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          marginBottom: '16px'
-        }}>
-          <Sparkles size={14} color="var(--gold-primary)" />
-          {tenant.name || 'Catálogo Imobiliário Exclusivo'}
-        </div>
-
-        <h1 style={{
-          fontSize: 'clamp(2rem, 4vw, 3.2rem)',
-          fontWeight: 700,
-          color: '#FFF',
-          marginBottom: '16px',
-          letterSpacing: '0.03em'
-        }}>
-          Encontre seu Próximo Imóvel. <span className="gold-gradient-text">Agendamento Imediato.</span>
-        </h1>
-
-        <p style={{
-          color: 'var(--text-muted)',
-          maxWidth: '680px',
-          margin: '0 auto',
-          fontSize: '1rem',
-          lineHeight: 1.6
-        }}>
-          {settings.aboutText || 'Navegue por coberturas, casas em condomínio e apartamentos de alto padrão com assessoria especializada e visitas presenciais simplificadas.'}
-        </p>
+  // Se o usuário selecionou a aba EMPRESA, exibe a página institucional animada
+  if (activeTab === 'empresa') {
+    return (
+      <div className="container" style={{ paddingTop: '36px', paddingBottom: '80px' }}>
+        <EmpresaView onNavigateTab={onSelectTab} totalProperties={properties.length} />
       </div>
+    );
+  }
+
+  // Se o usuário selecionou a aba CONTATO, exibe a central de atendimento e localização
+  if (activeTab === 'contato') {
+    return (
+      <div className="container" style={{ paddingTop: '36px', paddingBottom: '80px' }}>
+        <ContatoView />
+      </div>
+    );
+  }
+
+  return (
+    <div className="container" style={{ paddingTop: '32px', paddingBottom: '80px' }}>
+      {/* ABA INÍCIO: Apresentação em Vídeo de Fundo com Informações Animadas na Frente */}
+      {activeTab === 'home' && (
+        <VideoPresentationHero
+          totalProperties={properties.length}
+          totalCities={availableCities.length || 4}
+          onNavigateTab={onSelectTab}
+          onScrollToCatalog={() => {
+            document.getElementById('pesquisa-imoveis')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        />
+      )}
+
+      {/* ABAS VENDA / LOCAÇÃO / TEMPORADA: Cabeçalho Dedicado Editorial */}
+      {activeTab !== 'home' && (
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className={`relative mb-9 overflow-hidden rounded-[26px] border p-8 sm:p-11 ${
+            activeTab === 'venda'
+              ? 'border-[#E2DFD5] bg-[#F3F1EB]'
+              : activeTab === 'locacao'
+              ? 'border-[#D5DEC6] bg-[#E8ECE0]'
+              : 'border-[#CEDCE4] bg-[#E6EEF2]'
+          }`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="max-w-2xl">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#22221E]/15 bg-white/75 px-3.5 py-1 text-xs font-bold tracking-wider text-[#1F1F1C] uppercase">
+                {activeTab === 'venda' && <Building2 size={14} className="text-[#4A593D]" />}
+                {activeTab === 'locacao' && <KeyRound size={14} className="text-[#4A593D]" />}
+                {activeTab === 'temporada' && <Palmtree size={14} className="text-[#4A593D]" />}
+                <span>
+                  {activeTab === 'venda' && 'Portfólio de Aquisição & Patrimônio'}
+                  {activeTab === 'locacao' && 'Locação Residencial & Corporativa'}
+                  {activeTab === 'temporada' && 'Temporada & Mansões de Lazer'}
+                </span>
+              </div>
+
+              <h1 className="font-serif text-3xl font-medium tracking-[-0.025em] text-[#1F1F1C] sm:text-5xl">
+                {activeTab === 'venda' && 'Imóveis selecionados à venda'}
+                {activeTab === 'locacao' && 'Imóveis disponíveis para locação'}
+                {activeTab === 'temporada' && 'Imóveis de temporada e alto padrão'}
+              </h1>
+
+              <p className="mt-3 text-sm leading-relaxed text-[#4C4B46] sm:text-base">
+                {activeTab === 'venda' &&
+                  'Casas em condomínio fechado, coberturas duplex e propriedades com documentação 100% auditada e assessoria jurídica completa.'}
+                {activeTab === 'locacao' &&
+                  'Alugue com rapidez, vistoria digital detalhada e suporte dedicado durante toda a vigência contratual.'}
+                {activeTab === 'temporada' &&
+                  'Residências exclusivas com piscina aquecida, espaço gourmet e segurança 24h para estadias inesquecíveis.'}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <OrganicButton
+                href="#catalogo-imoveis"
+                label="Ver Opções Abaixo"
+                variantColor="primary"
+                size="md"
+                onClick={e => {
+                  e.preventDefault();
+                  document.getElementById('catalogo-imoveis')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              />
+              <OrganicButton
+                href="#contato"
+                label="Falar com Especialista"
+                variantColor="secondary"
+                size="md"
+                onClick={e => {
+                  e.preventDefault();
+                  onSelectTab('contato');
+                }}
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Componente Motor de Busca e Filtros */}
       <FilterBar
@@ -277,24 +378,33 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
       />
 
       {/* Barra de Contagem e Badges */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '24px',
-        padding: '0 4px',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
+      <div
+        id="catalogo-imoveis"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '24px',
+          padding: '0 4px',
+          flexWrap: 'wrap',
+          gap: '12px',
+          scrollMarginTop: '96px'
+        }}
+      >
         <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-          Mostrando <strong style={{ color: '#FFF' }}>{filteredProperties.length}</strong> {filteredProperties.length === 1 ? 'imóvel disponível' : 'imóveis disponíveis'}
+          Mostrando <strong style={{ color: '#1F1F1C' }}>{filteredProperties.length}</strong> {filteredProperties.length === 1 ? 'imóvel disponível' : 'imóveis disponíveis'}
           {filters.transactionType !== 'all' && (
-            <span style={{ color: 'var(--gold-light)', marginLeft: '6px' }}>
+            <span style={{ color: '#4A593D', fontWeight: 600, marginLeft: '6px' }}>
               ({filters.transactionType === 'for_sale' ? 'Venda' : 'Locação'})
             </span>
           )}
+          {activeTab === 'temporada' && (
+            <span style={{ color: '#4A593D', fontWeight: 600, marginLeft: '6px' }}>
+              (Temporada & Lazer)
+            </span>
+          )}
           {filters.code && (
-            <span style={{ color: 'var(--gold-light)', marginLeft: '6px' }}>
+            <span style={{ color: '#4A593D', fontWeight: 600, marginLeft: '6px' }}>
               • Ref: "{filters.code}"
             </span>
           )}
@@ -305,22 +415,25 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
           alignItems: 'center',
           gap: '16px',
           fontSize: '0.8rem',
-          color: 'var(--gold-light)'
+          color: '#4A593D',
+          fontWeight: 500
         }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            <CheckCircle2 size={14} color="var(--gold-primary)" /> Agendamento Online
+            <CheckCircle2 size={14} color="#4A593D" /> Clique em "Prévia" no card para visão rápida
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            <CheckCircle2 size={14} color="var(--gold-primary)" /> Dados e Metragens Validados
+            <CheckCircle2 size={14} color="#4A593D" /> Agendamento Online
           </span>
         </div>
       </div>
 
-      {/* Grid de Imóveis */}
+      {/* Grid de Imóveis (Usando Cult UI CutoutCard + IntroDisclosure) */}
       {filteredProperties.length > 0 ? (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+          gridAutoRows: '1fr',
+          alignItems: 'stretch',
           gap: '28px'
         }}>
           {filteredProperties.map(property => (
@@ -344,27 +457,177 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
             width: '64px',
             height: '64px',
             borderRadius: '999px',
-            background: 'rgba(197, 168, 128, 0.1)',
+            background: '#E8ECE0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 20px auto'
           }}>
-            <Building2 size={32} color="var(--gold-primary)" />
+            <Building2 size={32} color="#4A593D" />
           </div>
-          <h3 style={{ fontSize: '1.25rem', color: '#FFF', marginBottom: '8px' }}>
+          <h3 style={{ fontSize: '1.35rem', color: '#1F1F1C', marginBottom: '8px' }}>
             Nenhum imóvel encontrado
           </h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '24px', lineHeight: 1.5 }}>
             Não encontramos imóveis com os critérios selecionados. Tente limpar o código, alterar a cidade/bairro ou expandir a faixa de valor.
           </p>
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="btn btn-gold"
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <OrganicButton
+              href="#pesquisa-imoveis"
+              label="Limpar Todos os Filtros"
+              variantColor="primary"
+              size="md"
+              onClick={(e) => {
+                e.preventDefault();
+                handleResetFilters();
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Seção Editorial Dupla + Banner Sage (Inspirada na metade inferior da imagem de referência) */}
+      {activeTab === 'home' && (
+        <div className="mt-20 space-y-12">
+          {/* Dois Grandes Cartões Editoriais Lado a Lado: Verde Sálvia & Azul Acinzentado */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Cartão Esquerdo: Verde Sálvia (Sage) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col justify-between rounded-[28px] bg-[#98A67C] p-8 text-[#1F1F1C] sm:p-11"
+            >
+              <div>
+                <h3 className="font-serif text-3xl leading-[1.12] font-medium tracking-[-0.02em] text-[#1F1F1C] sm:text-4xl">
+                  O caminho mais seguro para comprar ou alugar seu imóvel
+                </h3>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-[#252B1E] sm:text-base">
+                  Da primeira visita presencial até a entrega das chaves, nossa equipe jurídica e comercial cuida de todas as etapas com total transparência.
+                </p>
+              </div>
+
+              <div className="mt-8 rounded-2xl bg-[#6E7C55] p-5 text-[#FBFBF9]">
+                <div className="mb-3 flex items-center justify-between border-b border-white/15 pb-2.5 text-xs font-semibold tracking-wider uppercase opacity-80">
+                  <span>Etapa da Consultoria</span>
+                  <span>Garantia {tenant.name.split(' ')[0]}</span>
+                </div>
+                <div className="space-y-2.5 text-xs sm:text-sm">
+                  <div className="flex items-center justify-between">
+                    <span>Avaliação Mercadológica</span>
+                    <span className="font-semibold text-[#E8ECE0]">Laudo Técnico Incluso</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Análise de Certidões e Matrícula</span>
+                    <span className="font-semibold text-[#E8ECE0]">100% Auditada</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Agendamento de Visitas</span>
+                    <span className="font-semibold text-[#E8ECE0]">Online & Imediato</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Cartão Direito: Azul Acinzentado Suave (Dusty Sky) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex flex-col justify-between rounded-[28px] bg-[#A7B8C4] p-8 text-[#1F1F1C] sm:p-11"
+            >
+              <div>
+                <h3 className="font-serif text-3xl leading-[1.12] font-medium tracking-[-0.02em] text-[#1F1F1C] sm:text-4xl">
+                  Atendimento consultivo para investidores e famílias
+                </h3>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-[#222D35] sm:text-base">
+                  Acesse oportunidades em condomínios fechados, coberturas e imóveis comerciais selecionados pelos nossos corretores credenciados.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('empresa');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="mt-5 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#22221E] text-[#FBFBF9] transition-transform hover:scale-105"
+                  title="Conhecer a Imobiliária"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+
+              <div className="mt-8 grid grid-cols-2 gap-3">
+                <div
+                  onClick={() => {
+                    onSelectTab('venda');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="cursor-pointer rounded-2xl bg-white/80 p-4 backdrop-blur-xs transition-transform hover:-translate-y-0.5"
+                >
+                  <Building2 size={20} className="mb-2 text-[#1F1F1C]" />
+                  <div className="font-serif text-lg font-medium text-[#1F1F1C]">Compra & Venda</div>
+                  <p className="mt-0.5 text-xs text-[#4C565E]">Patrimônio sólido e valorização</p>
+                </div>
+
+                <div
+                  onClick={() => {
+                    onSelectTab('locacao');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="cursor-pointer rounded-2xl bg-white/80 p-4 backdrop-blur-xs transition-transform hover:-translate-y-0.5"
+                >
+                  <KeyRound size={20} className="mb-2 text-[#1F1F1C]" />
+                  <div className="font-serif text-lg font-medium text-[#1F1F1C]">Locação Prime</div>
+                  <p className="mt-0.5 text-xs text-[#4C565E]">Contratos ágeis e digitais</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Banner Editorial Final em Verde Sálvia (Inspirado em "Ready to break up with your bank?" da imagem) */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.5 }}
+            className="overflow-hidden rounded-[28px] bg-[#E8ECE0] px-6 py-14 text-center sm:px-12 sm:py-16"
           >
-            Limpar Todos os Filtros
-          </button>
+            <div className="mx-auto max-w-xl">
+              <h2 className="font-serif text-3xl leading-[1.1] font-medium tracking-[-0.025em] text-[#1F1F1C] sm:text-5xl">
+                Pronto para encontrar o seu próximo imóvel?
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-[#444F39] sm:text-base">
+                Fale diretamente com nossos especialistas ou agende uma visita presencial em qualquer propriedade do nosso catálogo.
+              </p>
+              <div className="mt-7 flex flex-wrap items-center justify-center gap-4">
+                <OrganicButton
+                  href="#contato"
+                  label="Falar com a Imobiliária"
+                  variantColor="primary"
+                  size="md"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onSelectTab('contato');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                />
+                <OrganicButton
+                  href="#empresa"
+                  label="Sobre a Empresa"
+                  variantColor="secondary"
+                  size="md"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onSelectTab('empresa');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                />
+              </div>
+            </div>
+          </motion.section>
         </div>
       )}
     </div>

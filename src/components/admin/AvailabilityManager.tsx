@@ -27,13 +27,13 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
     if (!newBlackoutDate) return;
 
     if (schedule.blackoutDates.includes(newBlackoutDate)) {
-      setFeedbackMsg('This date is already blocked.');
+      setFeedbackMsg('Esta data já está bloqueada.');
       return;
     }
 
     StorageService.toggleBlackoutDate(selectedPropertyId, newBlackoutDate);
     setNewBlackoutDate('');
-    setFeedbackMsg(`Blocked viewings for ${formatDateString(newBlackoutDate)}`);
+    setFeedbackMsg(`Visitas bloqueadas para ${formatDateString(newBlackoutDate)}`);
     setTimeout(() => setFeedbackMsg(null), 3000);
     onRefresh();
   };
@@ -49,7 +49,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
       startHour: start,
       endHour: end
     });
-    setFeedbackMsg('Operating viewing hours updated successfully');
+    setFeedbackMsg('Horário de funcionamento para visitas atualizado com sucesso');
     setTimeout(() => setFeedbackMsg(null), 3000);
     onRefresh();
   };
@@ -59,15 +59,15 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
       <div className="glass-panel" style={{ padding: '28px', marginBottom: '24px' }}>
         <h3 style={{ fontSize: '1.25rem', color: '#FFF', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Calendar size={20} color="var(--gold-primary)" />
-          Viewing Availability & Blackout Configuration
+          Configuração de Disponibilidade & Bloqueio de Datas
         </h3>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
-          Configure working viewing hours and block specific dates (owner unavailable, private events, maintenance) per listing.
+          Configure os horários de visitação e bloqueie datas específicas (proprietário indisponível, manutenção, feriados) para cada imóvel.
         </p>
 
         {/* Property Selector */}
         <div className="form-group" style={{ marginBottom: '24px' }}>
-          <label className="form-label">Select Target Property</label>
+          <label className="form-label">Selecione o Imóvel</label>
           <select
             className="form-select"
             value={selectedPropertyId}
@@ -83,7 +83,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
 
         {/* Operating Hours Configuration */}
         <div style={{
-          background: 'rgba(11, 19, 35, 0.7)',
+          background: '',
           border: '1px solid var(--border-gold)',
           borderRadius: 'var(--radius-sm)',
           padding: '20px',
@@ -91,35 +91,35 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gold-light)', fontSize: '0.9rem', fontWeight: 600, marginBottom: '12px' }}>
             <Clock size={16} />
-            <span>Daily Viewing Hours (45-Min Slots with 15-Min Buffer)</span>
+            <span>Horário Diário de Visitas (Sessões de 45 min com Intervalo de 15 min)</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
             <div>
-              <label className="form-label">Earliest Appointment</label>
+              <label className="form-label">Primeiro Horário</label>
               <select
                 className="form-select"
                 value={schedule.startHour}
                 onChange={e => handleHoursChange(Number(e.target.value), schedule.endHour)}
               >
-                <option value={8}>08:00 AM</option>
-                <option value={9}>09:00 AM (Default)</option>
-                <option value={10}>10:00 AM</option>
-                <option value={11}>11:00 AM</option>
+                <option value={8}>08:00</option>
+                <option value={9}>09:00 (Padrão)</option>
+                <option value={10}>10:00</option>
+                <option value={11}>11:00</option>
               </select>
             </div>
 
             <div>
-              <label className="form-label">Latest Appointment Finish</label>
+              <label className="form-label">Encerramento do Expediente</label>
               <select
                 className="form-select"
                 value={schedule.endHour}
                 onChange={e => handleHoursChange(schedule.startHour, Number(e.target.value))}
               >
-                <option value={17}>05:00 PM</option>
-                <option value={18}>06:00 PM (Default)</option>
-                <option value={19}>07:00 PM</option>
-                <option value={20}>08:00 PM</option>
+                <option value={17}>17:00</option>
+                <option value={18}>18:00 (Padrão)</option>
+                <option value={19}>19:00</option>
+                <option value={20}>20:00</option>
               </select>
             </div>
           </div>
@@ -127,7 +127,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
 
         {/* Block Specific Date */}
         <form onSubmit={handleAddBlackout} style={{ marginBottom: '24px' }}>
-          <label className="form-label">Block a Specific Date (Blackout)</label>
+          <label className="form-label">Bloquear uma Data Específica</label>
           <div style={{ display: 'flex', gap: '10px' }}>
             <input
               type="date"
@@ -140,7 +140,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
             />
             <button type="submit" className="btn btn-gold">
               <Plus size={16} />
-              <span>Block Selected Date</span>
+              <span>Bloquear Data Selecionada</span>
             </button>
           </div>
         </form>
@@ -166,12 +166,12 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
         {/* Active Blackouts List */}
         <div>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-gold)', fontWeight: 600, marginBottom: '10px', textTransform: 'uppercase' }}>
-            Active Blackout Dates ({schedule.blackoutDates.length})
+            Datas Bloqueadas Ativas ({schedule.blackoutDates.length})
           </div>
 
           {schedule.blackoutDates.length === 0 ? (
             <div style={{ color: 'var(--text-dim)', fontSize: '0.85rem', fontStyle: 'italic' }}>
-              No blackout dates set. All standard weekdays & Saturdays are open for viewings.
+              Nenhuma data bloqueada. Todos os dias úteis e sábados estão abertos para agendamento de visitas.
             </div>
           ) : (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
@@ -196,7 +196,7 @@ export const AvailabilityManager: React.FC<AvailabilityManagerProps> = ({
                     type="button"
                     onClick={() => handleRemoveBlackout(dateStr)}
                     style={{ background: 'none', border: 'none', color: '#F87171', cursor: 'pointer', padding: 0 }}
-                    title="Remove Blackout"
+                    title="Remover Bloqueio"
                   >
                     <Trash2 size={14} />
                   </button>

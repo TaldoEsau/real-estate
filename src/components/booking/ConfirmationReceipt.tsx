@@ -36,11 +36,11 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
   const googleCalUrl = CalendarService.getGoogleCalendarUrl(booking);
 
   // Mailto direct client link
-  const mailtoSubject = encodeURIComponent(`My Viewing Reservation: ${booking.propertyTitle}`);
+  const mailtoSubject = encodeURIComponent(`Minha Visita Agendada: ${booking.propertyTitle}`);
   const mailtoBody = encodeURIComponent(
-    `Hello ${agent ? agent.name : 'Aura Estates'},\n\nI have confirmed my private viewing for ${booking.propertyTitle} on ${formatDateString(booking.date)} at ${booking.timeSlot}.\n\nReference: #${booking.id.slice(0, 8).toUpperCase()}\nClient: ${booking.clientName}\nPhone: ${booking.clientPhone}`
+    `Olá ${agent ? agent.name : 'Consultoria Imobiliária'},\n\nConfirmei minha visita presencial ao imóvel ${booking.propertyTitle} para o dia ${formatDateString(booking.date)} às ${booking.timeSlot}.\n\nReferência: #${booking.id.slice(0, 8).toUpperCase()}\nCliente: ${booking.clientName}\nTelefone: ${booking.clientPhone}`
   );
-  const mailtoUrl = `mailto:${agent ? agent.email : 'advisory@auraestates.com'}?subject=${mailtoSubject}&body=${mailtoBody}`;
+  const mailtoUrl = `mailto:${agent ? agent.email : 'contato@auraimoveis.com.br'}?subject=${mailtoSubject}&body=${mailtoBody}`;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -59,7 +59,7 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
         }}>
           <button
             onClick={onClose}
-            aria-label="Close Modal"
+            aria-label="Fechar Modal"
             style={{
               position: 'absolute',
               top: '16px',
@@ -93,10 +93,10 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
             fontFamily: 'var(--font-serif)',
             marginBottom: '4px'
           }}>
-            Viewing Confirmed
+            Visita Confirmada
           </h2>
           <p style={{ color: 'var(--gold-light)', fontSize: '0.85rem' }}>
-            Reference: <strong style={{ letterSpacing: '1px', color: '#FFF' }}>#{booking.id.slice(0, 8).toUpperCase()}</strong>
+            Referência: <strong style={{ letterSpacing: '1px', color: '#FFF' }}>#{booking.id.slice(0, 8).toUpperCase()}</strong>
           </p>
         </div>
 
@@ -128,10 +128,10 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#34D399' }}>
-                Confirmation Email Dispatched
+                E-mail de Confirmação Enviado
               </div>
               <div style={{ fontSize: '0.75rem', color: '#E5E7EB' }}>
-                Dispatched to: <strong>{booking.clientEmail}</strong> with complete viewing instructions.
+                Enviado para: <strong>{booking.clientEmail}</strong> com todas as instruções da visita.
               </div>
             </div>
           </div>
@@ -145,7 +145,7 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
             marginBottom: '20px'
           }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--gold-light)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '6px' }}>
-              Reserved Property
+              Imóvel Reservado
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 600, color: '#FFF', marginBottom: '14px' }}>
               {booking.propertyTitle}
@@ -158,19 +158,19 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
               fontSize: '0.85rem'
             }}>
               <div>
-                <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Date</span>
+                <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Data</span>
                 <strong style={{ color: '#FFF' }}>{formatDateString(booking.date)}</strong>
               </div>
               <div>
-                <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Time Slot</span>
+                <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Horário</span>
                 <strong style={{ color: 'var(--gold-primary)' }}>{booking.timeSlot}</strong>
               </div>
               <div>
-                <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Client Name</span>
+                <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Nome do Cliente</span>
                 <span style={{ color: '#FFF' }}>{booking.clientName}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Dedicated Advisor</span>
+                <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Corretor Responsável</span>
                 <span style={{ color: '#FFF' }}>{agent ? agent.name : 'Alexandra Vance'}</span>
               </div>
             </div>
@@ -187,7 +187,7 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
                 style={{ flex: '1 1 200px', fontSize: '0.8rem' }}
               >
                 <ExternalLink size={14} />
-                <span>Add to Google Calendar</span>
+                <span>Adicionar ao Google Agenda</span>
               </a>
 
               <button
@@ -196,7 +196,7 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
                 style={{ flex: '1 1 180px', fontSize: '0.8rem' }}
               >
                 <Download size={14} />
-                <span>Download .ics File</span>
+                <span>Baixar Arquivo .ics</span>
               </button>
             </div>
 

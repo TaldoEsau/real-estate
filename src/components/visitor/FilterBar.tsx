@@ -55,10 +55,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   ].filter(Boolean).length;
 
   return (
-    <div className="glass-panel" style={{
+    <div id="pesquisa-imoveis" className="glass-panel" style={{
       padding: '24px',
       marginBottom: '36px',
-      position: 'relative'
+      position: 'relative',
+      scrollMarginTop: '96px'
     }}>
       {/* 1. Abas de Chaveamento Transacional (Comprar / Alugar / Todos) */}
       <div style={{
@@ -66,26 +67,30 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         alignItems: 'center',
         gap: '8px',
         marginBottom: '20px',
-        borderBottom: '1px solid rgba(197, 168, 128, 0.15)',
-        paddingBottom: '16px'
+        borderBottom: '1px solid #EAE7DF',
+        paddingBottom: '16px',
+        flexWrap: 'wrap'
       }}>
         <button
           type="button"
           onClick={() => handleTransactionChange('all')}
           style={{
             padding: '8px 18px',
-            borderRadius: 'var(--radius-sm)',
-            border: 'none',
-            fontSize: '0.85rem',
+            borderRadius: '999px',
+            border: '1px solid',
+            borderColor: (!filters.transactionType || filters.transactionType === 'all')
+              ? '#22221E'
+              : '#E2DFD5',
+            fontSize: '0.84rem',
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             background: (!filters.transactionType || filters.transactionType === 'all')
-              ? 'var(--gold-gradient)'
-              : 'rgba(255, 255, 255, 0.05)',
+              ? '#22221E'
+              : '#F3F1EB',
             color: (!filters.transactionType || filters.transactionType === 'all')
-              ? '#0B1323'
-              : 'var(--text-muted)'
+              ? '#FBFBF9'
+              : '#5F5E58'
           }}
         >
           Todos os Imóveis
@@ -96,18 +101,21 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           onClick={() => handleTransactionChange('for_sale')}
           style={{
             padding: '8px 18px',
-            borderRadius: 'var(--radius-sm)',
-            border: 'none',
-            fontSize: '0.85rem',
+            borderRadius: '999px',
+            border: '1px solid',
+            borderColor: filters.transactionType === 'for_sale'
+              ? '#22221E'
+              : '#E2DFD5',
+            fontSize: '0.84rem',
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             background: filters.transactionType === 'for_sale'
-              ? 'var(--gold-gradient)'
-              : 'rgba(255, 255, 255, 0.05)',
+              ? '#22221E'
+              : '#F3F1EB',
             color: filters.transactionType === 'for_sale'
-              ? '#0B1323'
-              : 'var(--text-muted)'
+              ? '#FBFBF9'
+              : '#5F5E58'
           }}
         >
           Comprar (Venda)
@@ -118,18 +126,21 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           onClick={() => handleTransactionChange('for_rent')}
           style={{
             padding: '8px 18px',
-            borderRadius: 'var(--radius-sm)',
-            border: 'none',
-            fontSize: '0.85rem',
+            borderRadius: '999px',
+            border: '1px solid',
+            borderColor: filters.transactionType === 'for_rent'
+              ? '#22221E'
+              : '#E2DFD5',
+            fontSize: '0.84rem',
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             background: filters.transactionType === 'for_rent'
-              ? 'var(--gold-gradient)'
-              : 'rgba(255, 255, 255, 0.05)',
+              ? '#22221E'
+              : '#F3F1EB',
             color: filters.transactionType === 'for_rent'
-              ? '#0B1323'
-              : 'var(--text-muted)'
+              ? '#FBFBF9'
+              : '#5F5E58'
           }}
         >
           Alugar (Locação)
@@ -204,8 +215,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           <span>Filtros</span>
           {activeAdvancedCount > 0 && (
             <span style={{
-              background: '#0B1323',
-              color: 'var(--gold-light)',
+              background: '#98A67C',
+              color: '#1F1F1C',
               borderRadius: '999px',
               padding: '2px 7px',
               fontSize: '0.7rem',

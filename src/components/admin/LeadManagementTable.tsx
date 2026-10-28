@@ -130,7 +130,7 @@ export const LeadManagementTable: React.FC<LeadManagementTableProps> = ({ onRefr
         marginBottom: '20px'
       }}>
         <div>
-          <h2 style={{ fontSize: '1.25rem', color: '#FFF', margin: '0 0 4px 0' }}>
+          <h2 style={{ fontSize: '1.35rem', color: 'var(--text-main)', margin: '0 0 4px 0' }}>
             CRM & Gestão de Leads Recebidos
           </h2>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -237,7 +237,7 @@ export const LeadManagementTable: React.FC<LeadManagementTableProps> = ({ onRefr
                   }}>
                     {/* Data / Tipo */}
                     <td style={{ padding: '12px 10px', verticalAlign: 'top' }}>
-                      <div style={{ fontWeight: 600, color: '#FFF' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
                         {formatDateTime(lead.createdAt)}
                       </div>
                       <div style={{ marginTop: '4px' }}>
@@ -247,7 +247,7 @@ export const LeadManagementTable: React.FC<LeadManagementTableProps> = ({ onRefr
 
                     {/* Cliente */}
                     <td style={{ padding: '12px 10px', verticalAlign: 'top' }}>
-                      <strong style={{ color: '#FFF', display: 'block' }}>{lead.name}</strong>
+                      <strong style={{ color: 'var(--text-main)', display: 'block' }}>{lead.name}</strong>
                       {lead.message && (
                         <button
                           type="button"
@@ -291,17 +291,17 @@ export const LeadManagementTable: React.FC<LeadManagementTableProps> = ({ onRefr
                         <div>
                           <span style={{
                             display: 'inline-block',
-                            background: 'rgba(197, 168, 128, 0.15)',
-                            color: 'var(--gold-light)',
-                            borderRadius: '3px',
-                            padding: '1px 5px',
+                            background: '#E8ECE0',
+                            color: '#36442B',
+                            borderRadius: '4px',
+                            padding: '1px 6px',
                             fontSize: '0.7rem',
                             fontWeight: 700,
                             marginBottom: '2px'
                           }}>
                             {lead.propertyCode || 'REF'}
                           </span>
-                          <div style={{ color: '#FFF', maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <div style={{ color: 'var(--text-main)', maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {lead.propertyTitle}
                           </div>
                         </div>
@@ -366,15 +366,15 @@ export const LeadManagementTable: React.FC<LeadManagementTableProps> = ({ onRefr
                     <tr style={{ background: 'rgba(255, 255, 255, 0.02)' }}>
                       <td colSpan={6} style={{ padding: '12px 18px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
                         <div style={{
-                          background: 'rgba(6, 10, 18, 0.6)',
-                          border: '1px solid rgba(197, 168, 128, 0.2)',
+                          background: '#F3F1EB',
+                          border: '1px solid #E4E1D7',
                           borderRadius: 'var(--radius-sm)',
                           padding: '12px 16px'
                         }}>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--gold-light)', fontWeight: 700, marginBottom: '4px' }}>
+                          <div style={{ fontSize: '0.75rem', color: '#4A593D', fontWeight: 700, marginBottom: '4px' }}>
                             {lead.leadType === 'report_error' ? 'DETALHES DO ERRO REPORTADO:' : 'MENSAGEM ENVIADA PELO CLIENTE:'}
                           </div>
-                          <p style={{ color: '#FFF', margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                          <p style={{ color: 'var(--text-main)', margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
                             {lead.message || 'Sem mensagem adicional'}
                           </p>
                           {lead.details?.problemType && (

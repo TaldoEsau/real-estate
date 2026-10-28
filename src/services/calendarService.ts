@@ -13,8 +13,8 @@ export const CalendarService = {
 
     const formatGDate = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
 
-    const title = encodeURIComponent(`Private Viewing: ${booking.propertyTitle}`);
-    const details = encodeURIComponent(`Private in-person real estate viewing.\nClient: ${booking.clientName}\nPhone: ${booking.clientPhone}`);
+    const title = encodeURIComponent(`Visita Presencial: ${booking.propertyTitle}`);
+    const details = encodeURIComponent(`Visita presencial ao imóvel.\nCliente: ${booking.clientName}\nTelefone: ${booking.clientPhone}`);
     const dates = `${formatGDate(startDate)}/${formatGDate(endDate)}`;
 
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dates}`;
@@ -33,14 +33,14 @@ export const CalendarService = {
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//AURA Estates//Viewing Booking//EN',
+      'PRODID:-//AURA Imoveis//Agendamento de Visita//PT',
       'BEGIN:VEVENT',
-      `UID:${booking.id}@auraestates.com`,
+      `UID:${booking.id}@auraimoveis.com.br`,
       `DTSTAMP:${startStr}Z`,
       `DTSTART:${startStr}`,
       `DTEND:${endStr}`,
-      `SUMMARY:Private Viewing - ${booking.propertyTitle}`,
-      `DESCRIPTION:Private in-person property viewing for ${booking.clientName}`,
+      `SUMMARY:Visita Presencial - ${booking.propertyTitle}`,
+      `DESCRIPTION:Visita presencial agendada para ${booking.clientName}`,
       'STATUS:CONFIRMED',
       'END:VEVENT',
       'END:VCALENDAR'
@@ -50,7 +50,7 @@ export const CalendarService = {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `viewing-${booking.date}-${booking.id.slice(0, 8)}.ics`;
+    link.download = `visita-${booking.date}-${booking.id.slice(0, 8)}.ics`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

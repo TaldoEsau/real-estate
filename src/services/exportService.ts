@@ -6,21 +6,21 @@ export const ExportService = {
     const agents = StorageService.getAgents();
     const getAgentName = (id: string) => {
       const a = agents.find(agent => agent.id === id);
-      return a ? a.name : 'Unassigned';
+      return a ? a.name : 'Não atribuído';
     };
 
     const headers = [
-      'Booking ID',
-      'Property Title',
-      'Appointment Date',
-      'Time Slot',
-      'Client Name',
-      'Client Email',
-      'Client Phone',
+      'ID do Agendamento',
+      'Título do Imóvel',
+      'Data da Visita',
+      'Horário',
+      'Nome do Cliente',
+      'E-mail do Cliente',
+      'Telefone do Cliente',
       'Status',
-      'Assigned Agent',
-      'Notes',
-      'Created Date'
+      'Corretor Responsável',
+      'Observações',
+      'Data de Criação'
     ];
 
     const escapeCsv = (val: string | number | undefined) => {
@@ -53,7 +53,7 @@ export const ExportService = {
     const link = document.createElement('a');
     link.href = url;
     const today = new Date().toISOString().split('T')[0];
-    link.download = `aura-viewing-bookings-${today}.csv`;
+    link.download = `visitas-agendadas-${today}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

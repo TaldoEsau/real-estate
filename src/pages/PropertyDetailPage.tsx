@@ -20,6 +20,15 @@ interface PropertyDetailPageProps {
   onOpenNotifications?: () => void;
 }
 
+const typeLabels: Record<string, string> = {
+  apartment: 'Apartamento',
+  house: 'Casa',
+  villa: 'Casa em Condomínio',
+  penthouse: 'Cobertura',
+  townhouse: 'Casa de Vila',
+  commercial: 'Comercial'
+};
+
 export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
   property,
   onBack
@@ -78,11 +87,11 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
 
         setConfirmedBooking(result.booking);
       } else {
-        setBookingError(result.error || 'Failed to confirm viewing. Please try another slot.');
+        setBookingError(result.error || 'Não foi possível confirmar a visita. Por favor, escolha outro horário.');
       }
     } catch (err) {
       console.error(err);
-      setBookingError('An error occurred during booking. Please try again.');
+      setBookingError('Ocorreu um erro durante o agendamento. Por favor, tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
@@ -118,7 +127,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span className="badge badge-gold">{property.propertyType.toUpperCase()}</span>
+            <span className="badge badge-gold">{(typeLabels[property.propertyType] || property.propertyType).toUpperCase()}</span>
             <span style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>•</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--gold-light)', fontSize: '0.9rem' }}>
               <MapPin size={15} color="var(--gold-primary)" />
@@ -128,9 +137,9 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
 
           <h1 style={{
             fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
-            fontWeight: 700,
-            color: '#FFF',
-            lineHeight: 1.2
+            fontWeight: 500,
+            color: 'var(--text-main)',
+            lineHeight: 1.15
           }}>
             {property.title}
           </h1>
@@ -142,9 +151,9 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
           </div>
           <div style={{
             fontSize: 'clamp(2rem, 3vw, 2.8rem)',
-            fontWeight: 800,
+            fontWeight: 500,
             fontFamily: 'var(--font-serif)',
-            color: '#FFF'
+            color: 'var(--text-main)'
           }}>
             {formatCurrency(property.price)}
           </div>
@@ -172,27 +181,28 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
             gap: '16px',
-            textAlign: 'center'
+            textAlign: 'center',
+            background: '#F3F1EB'
           }}>
             <div>
               <Bed size={22} color="var(--gold-primary)" style={{ margin: '0 auto 6px auto' }} />
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#FFF' }}>{property.specs.bedrooms}</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: 600, fontFamily: 'var(--font-serif)', color: 'var(--text-main)' }}>{property.specs.bedrooms}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dormitórios</div>
             </div>
             <div>
               <Bath size={22} color="var(--gold-primary)" style={{ margin: '0 auto 6px auto' }} />
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#FFF' }}>{property.specs.bathrooms}</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: 600, fontFamily: 'var(--font-serif)', color: 'var(--text-main)' }}>{property.specs.bathrooms}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Banheiros</div>
             </div>
             <div>
               <Maximize2 size={22} color="var(--gold-primary)" style={{ margin: '0 auto 6px auto' }} />
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#FFF' }}>{formatArea(property.specs.areaSqFt)}</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: 600, fontFamily: 'var(--font-serif)', color: 'var(--text-main)' }}>{formatArea(property.specs.areaSqFt)}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Área Útil</div>
             </div>
             {property.specs.yearBuilt && (
               <div>
                 <Calendar size={22} color="var(--gold-primary)" style={{ margin: '0 auto 6px auto' }} />
-                <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#FFF' }}>{property.specs.yearBuilt}</div>
+                <div style={{ fontSize: '1.35rem', fontWeight: 600, fontFamily: 'var(--font-serif)', color: 'var(--text-main)' }}>{property.specs.yearBuilt}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Ano de Construção</div>
               </div>
             )}
@@ -200,7 +210,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
 
           {/* Overview Description */}
           <div className="glass-panel" style={{ padding: '28px' }}>
-            <h3 style={{ fontSize: '1.3rem', color: '#FFF', marginBottom: '14px' }}>
+            <h3 style={{ fontSize: '1.45rem', color: 'var(--text-main)', marginBottom: '14px' }}>
               Sobre o Imóvel
             </h3>
             <p style={{
@@ -213,12 +223,14 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
 
             {/* Amenities Tags */}
             <h4 style={{
-              fontSize: '0.85rem',
-              color: 'var(--gold-light)',
+              fontSize: '0.8rem',
+              color: 'var(--text-muted)',
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
               marginTop: '28px',
-              marginBottom: '14px'
+              marginBottom: '14px',
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 700
             }}>
               Comodidades & Diferenciais
             </h4>
@@ -227,12 +239,13 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
                 <span
                   key={amenity}
                   style={{
-                    background: 'rgba(197, 168, 128, 0.08)',
-                    border: '1px solid var(--border-gold)',
-                    borderRadius: 'var(--radius-sm)',
+                    background: '#E8ECE0',
+                    border: '1px solid #CFD8C0',
+                    borderRadius: '999px',
                     padding: '6px 14px',
                     fontSize: '0.8rem',
-                    color: '#FFF'
+                    fontWeight: 500,
+                    color: '#1F1F1C'
                   }}
                 >
                   {amenity}
@@ -246,7 +259,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
 
           {/* Assigned Agent Card */}
           {agent && (
-            <div className="glass-panel" style={{ padding: '24px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <div className="glass-panel" style={{ padding: '24px', display: 'flex', gap: '20px', alignItems: 'center', background: '#F3F1EB' }}>
               <img
                 src={agent.avatar}
                 alt={agent.name}
@@ -255,16 +268,16 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
                   height: '80px',
                   borderRadius: '999px',
                   objectFit: 'cover',
-                  border: '2px solid var(--gold-primary)'
+                  border: '2px solid #22221E'
                 }}
               />
               <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--gold-light)', textTransform: 'uppercase', fontWeight: 700 }}>
+                <div style={{ fontSize: '0.75rem', color: '#4A593D', textTransform: 'uppercase', fontWeight: 700 }}>
                   Corretor Responsável
                 </div>
-                <h4 style={{ fontSize: '1.2rem', color: '#FFF', margin: '2px 0 4px 0' }}>{agent.name}</h4>
+                <h4 style={{ fontSize: '1.3rem', color: 'var(--text-main)', margin: '2px 0 4px 0' }}>{agent.name}</h4>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{agent.role}</p>
-                <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--text-gold)' }}>
+                <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: 'var(--text-gold)', fontWeight: 500 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Phone size={13} /> {agent.phone}
                   </span>
@@ -284,7 +297,7 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
         }}>
           <div className="glass-panel" style={{
             padding: '24px',
-            border: '2px solid var(--border-gold)',
+            border: '1px solid #DCD8CC',
             boxShadow: 'var(--shadow-elevated)'
           }}>
             {/* Abas Superiores de Ação */}
@@ -292,9 +305,9 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
               gap: '8px',
-              background: 'rgba(255, 255, 255, 0.05)',
+              background: '#F3F1EB',
               padding: '4px',
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: '999px',
               marginBottom: '20px'
             }}>
               <button
@@ -302,14 +315,14 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
                 onClick={() => setActiveActionTab('inquiry')}
                 style={{
                   padding: '8px 12px',
-                  borderRadius: 'var(--radius-sm)',
+                  borderRadius: '999px',
                   border: 'none',
                   fontSize: '0.825rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  background: activeActionTab === 'inquiry' ? 'var(--gold-gradient)' : 'transparent',
-                  color: activeActionTab === 'inquiry' ? '#0B1323' : 'var(--text-muted)',
+                  background: activeActionTab === 'inquiry' ? '#22221E' : 'transparent',
+                  color: activeActionTab === 'inquiry' ? '#FBFBF9' : 'var(--text-muted)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -325,14 +338,14 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
                 onClick={() => setActiveActionTab('viewing')}
                 style={{
                   padding: '8px 12px',
-                  borderRadius: 'var(--radius-sm)',
+                  borderRadius: '999px',
                   border: 'none',
                   fontSize: '0.825rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  background: activeActionTab === 'viewing' ? 'var(--gold-gradient)' : 'transparent',
-                  color: activeActionTab === 'viewing' ? '#0B1323' : 'var(--text-muted)',
+                  background: activeActionTab === 'viewing' ? '#22221E' : 'transparent',
+                  color: activeActionTab === 'viewing' ? '#FBFBF9' : 'var(--text-muted)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -348,10 +361,10 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
             {activeActionTab === 'inquiry' && (
               <div>
                 <div style={{ marginBottom: '16px' }}>
-                  <h3 style={{ fontSize: '1.25rem', color: '#FFF', margin: '0 0 4px 0' }}>
+                  <h3 style={{ fontSize: '1.35rem', color: 'var(--text-main)', margin: '0 0 4px 0' }}>
                     Fale com o Consultor
                   </h3>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--gold-light)' }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                     Atendimento imediato para este imóvel com {agent ? agent.name : 'nossa equipe'}
                   </span>
                 </div>
@@ -364,10 +377,10 @@ export const PropertyDetailPage: React.FC<PropertyDetailPageProps> = ({
             {activeActionTab === 'viewing' && (
               <div>
                 <div style={{ marginBottom: '16px' }}>
-                  <h3 style={{ fontSize: '1.25rem', color: '#FFF', margin: '0 0 4px 0' }}>
+                  <h3 style={{ fontSize: '1.35rem', color: 'var(--text-main)', margin: '0 0 4px 0' }}>
                     Agendar Visita Presencial
                   </h3>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--gold-light)' }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                     Escolha data e horário para visita com {agent ? agent.name : 'o corretor'}
                   </span>
                 </div>

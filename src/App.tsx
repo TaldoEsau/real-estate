@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Property } from './types';
 import { StorageService, subscribeToStore } from './services/storageService';
 import { AuthService } from './services/authService';
+import { AnalyticsService } from './services/analyticsService';
 import { TenantProvider, useTenant } from './context/TenantContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { Navbar } from './components/common/Navbar';
@@ -27,8 +28,9 @@ export const AppContent: React.FC = () => {
   // Storage state tick para reatividade
   const [storeRevision, setStoreRevision] = useState(0);
 
-  // Escuta alterações na autenticação
+  // Escuta alterações na autenticação e inicializa sessão real de telemetria
   useEffect(() => {
+    AnalyticsService.initRealSession();
     const unsubAuth = AuthService.subscribe(user => {
       setIsAuthenticated(!!user && user.isActive);
     });
@@ -102,6 +104,7 @@ export const AppContent: React.FC = () => {
 
   const handleSelectTab = (tab: PublicTab) => {
     setActiveTab(tab);
+    AnalyticsService.trackPageView(tab);
     if (currentView !== 'catalog') {
       window.location.hash = '#/';
       setCurrentView('catalog');
@@ -110,10 +113,55 @@ export const AppContent: React.FC = () => {
   };
 
   const handleSelectProperty = (property: Property) => {
+    AnalyticsService.trackPropertyView(property);
     window.location.hash = `#/imovel/${property.id}`;
     setSelectedPropertyId(property.id);
     setCurrentView('detail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Sensor Global de Calor (Heatmap): captura cliques reais dos visitantes no site público
+  const handleGlobalHeatmapClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (currentView === 'admin') return;
+
+    const docHeight = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight,
+      window.innerHeight
+    );
+    const xPercent = (e.clientX / Math.max(window.innerWidth, 1)) * 100;
+    const yPercent = ((e.clientY + window.scrollY) / Math.max(docHeight, 1)) * 100;
+
+    const target = e.target as HTMLElement;
+    const interactiveEl = target.closest('button, a, input, select, [data-slot="cutout-card"]') as HTMLElement | null;
+    const rawLabel =
+      interactiveEl?.getAttribute('title') ||
+      interactiveEl?.getAttribute('aria-label') ||
+      interactiveEl?.innerText?.trim().split('\n')[0]?.slice(0, 42) ||
+      target.tagName.toLowerCase();
+
+    let zone: 'navbar' | 'hero_video' | 'search_filters' | 'property_cards' | 'institutional_footer' | 'property_detail' = 'property_cards';
+    if (currentView === 'detail') {
+      zone = 'property_detail';
+    } else if (target.closest('header')) {
+      zone = 'navbar';
+    } else if (target.closest('#pesquisa-imoveis')) {
+      zone = 'search_filters';
+    } else if (target.closest('footer')) {
+      zone = 'institutional_footer';
+    } else if (yPercent < 46) {
+      zone = 'hero_video';
+    } else if (yPercent > 86) {
+      zone = 'institutional_footer';
+    }
+
+    AnalyticsService.trackHeatmapClick({
+      xPercent,
+      yPercent,
+      tab: currentView === 'detail' ? 'detail' : activeTab,
+      zone,
+      elementLabel: rawLabel || 'Interação na Página',
+    });
   };
 
   const handleLogout = () => {
@@ -126,7 +174,10 @@ export const AppContent: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div
+      onClickCapture={handleGlobalHeatmapClick}
+      style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+    >
       {/* Barra de Navegação Superior com Identidade Visual e Abas (Início, Empresa, Venda, Locação, Temporada, Contato) */}
       <Navbar
         currentView={currentView}

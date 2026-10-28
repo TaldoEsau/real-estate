@@ -3,15 +3,16 @@
 import React, { useState } from "react"
 import { motion } from "motion/react"
 import {
-  Home,
   Menu,
   X,
   MessageCircle,
   ArrowLeft,
   Mail,
   Phone,
-  Star,
-  Share2,
+  Bookmark,
+  ArrowUpRight,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react"
 import { useTenant } from "../../context/TenantContext"
 import { useFavorites } from "../../context/FavoritesContext"
@@ -26,12 +27,12 @@ interface NavbarProps {
 }
 
 const NAV_TABS: { id: PublicTab; label: string }[] = [
-  { id: "home", label: "INÍCIO" },
-  { id: "empresa", label: "EMPRESA" },
-  { id: "venda", label: "VENDA" },
-  { id: "locacao", label: "LOCAÇÃO" },
-  { id: "temporada", label: "TEMPORADA" },
-  { id: "contato", label: "CONTATO" },
+  { id: "home", label: "Início" },
+  { id: "empresa", label: "A Imobiliária" },
+  { id: "venda", label: "Comprar" },
+  { id: "locacao", label: "Alugar" },
+  { id: "temporada", label: "Temporada" },
+  { id: "contato", label: "Contato" },
 ]
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -41,12 +42,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
   onOpenFavorites,
 }) => {
-  const { tenant, settings } = useTenant()
+  const { tenant } = useTenant()
   const { favoritesCount } = useFavorites()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const brandWords = (tenant.name || "Aura Consultoria Imobiliária").split(" ")
-  const brandSub = brandWords[0]?.toUpperCase() || "AURA"
+  const primaryBrand = brandWords[0] || "Aura"
 
   const handleTabClick = (tab: PublicTab) => {
     onSelectTab(tab)
@@ -62,18 +63,20 @@ export const Navbar: React.FC<NavbarProps> = ({
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "rgba(251, 251, 249, 0.96)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
+        background: "rgba(251, 251, 249, 0.92)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
         borderBottom: "1px solid #E4E1D7",
-        boxShadow: "0 4px 20px rgba(31, 31, 28, 0.04)",
       }}
     >
-      {/* 1ª FAIXA SUPERIOR: E-mail à esquerda | Logo Editorial + CRECI ao centro | Bloco de Telefone Charcoal à direita */}
+      {/* Fita Editorial Minimalista no Topo (Fundo Charcoal com Credenciais e Contato Direto) */}
       <div
+        className="editorial-top-ribbon"
         style={{
-          borderBottom: "1px solid #EAE7DF",
-          background: "#FBFBF9",
+          background: "#1F1F1C",
+          color: "#D8D5CC",
+          fontSize: "0.73rem",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}
       >
         <div
@@ -82,188 +85,189 @@ export const Navbar: React.FC<NavbarProps> = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            minHeight: "78px",
+            minHeight: "34px",
             gap: "16px",
           }}
         >
-          {/* Esquerda: E-mail de Contato */}
-          <div className="top-email-col" style={{ flex: 1 }}>
+          {/* Esquerda: Selo CRECI e Curadoria */}
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                color: "#E8ECE0",
+                fontWeight: 600,
+                letterSpacing: "0.04em",
+              }}
+            >
+              <ShieldCheck size={13} color="#98A67C" />
+              CRECI 30699-J • Curadoria Patrimonial & Alto Padrão
+            </span>
+          </div>
+
+          {/* Direita: Contato Rápido Discreto */}
+          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
             <a
               href={`mailto:${tenant.email || "contato@auraimoveis.com.br"}`}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                color: "#5F5E58",
-                fontSize: "0.84rem",
-                fontWeight: 500,
+                gap: "6px",
+                color: "#C7C5BC",
                 textDecoration: "none",
                 transition: "color 0.2s ease",
               }}
             >
-              <Mail size={15} color="#4A593D" />
+              <Mail size={12} color="#98A67C" />
               <span>{tenant.email || "contato@auraimoveis.com.br"}</span>
             </a>
-          </div>
 
-          {/* Centro: Emblema IMOBILIÁRIA + Nome + CRECI (Tipografia Editorial) */}
+            <span style={{ opacity: 0.25 }}>|</span>
+
+            <a
+              href={`tel:${(tenant.phone || "").replace(/\D/g, "")}`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                color: "#FFFFFF",
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
+            >
+              <Phone size={12} color="#98A67C" />
+              <span>{tenant.phone || "+55 (11) 3456-7890"}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Barra Principal Única: Identidade à Esquerda | Dock Flutuante em Pílula ao Centro | Ações Orgânicas à Direita */}
+      <div className="container">
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            minHeight: "76px",
+            gap: "18px",
+          }}
+        >
+          {/* 1. Identidade da Marca (Alinhada à Esquerda, Estilo Editorial Contemporâneo) */}
           <div
             onClick={() => handleTabClick("home")}
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              gap: "14px",
+              gap: "12px",
               cursor: "pointer",
               userSelect: "none",
-              padding: "8px 0",
+              flexShrink: 0,
             }}
           >
+            {/* Monograma Arquitetônico */}
             <div
               style={{
-                width: "46px",
-                height: "46px",
-                borderRadius: "12px",
-                border: "1.5px solid #22221E",
-                background: "#F3F1EB",
+                width: "40px",
+                height: "40px",
+                borderRadius: "999px",
+                background: "#22221E",
+                color: "#FBFBF9",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                position: "relative",
+                boxShadow: "0 4px 12px rgba(34, 34, 30, 0.12)",
               }}
             >
-              <Home size={23} color="#22221E" strokeWidth={2} />
-            </div>
-
-            <div style={{ textAlign: "center" }}>
-              <div
+              <span
                 style={{
                   fontFamily: "var(--font-serif)",
-                  fontSize: "1.55rem",
+                  fontSize: "1.3rem",
+                  fontStyle: "italic",
                   fontWeight: 600,
-                  letterSpacing: "-0.02em",
-                  color: "#1F1F1C",
                   lineHeight: 1,
-                }}
-              >
-                Imobiliária {brandSub.charAt(0) + brandSub.slice(1).toLowerCase()}
-              </div>
-              <div
-                style={{
-                  fontSize: "0.68rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.14em",
-                  color: "#5F5E58",
-                  marginTop: "3px",
-                  textTransform: "uppercase",
-                }}
-              >
-                CRECI 30699-J • Consultoria Exclusiva
-              </div>
-            </div>
-          </div>
-
-          {/* Direita: Bloco de Telefone Destacado com Ícone Flutuante */}
-          <div
-            className="top-phone-col"
-            style={{
-              flex: 1,
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-            }}
-          >
-            <a
-              href={`https://wa.me/55${(tenant.whatsapp || tenant.phone).replace(
-                /\D/g,
-                ""
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                position: "relative",
-                display: "inline-flex",
-                alignItems: "center",
-                background: "#22221E",
-                borderRadius: "999px",
-                padding: "10px 22px 10px 30px",
-                color: "#FBFBF9",
-                textDecoration: "none",
-                boxShadow: "0 4px 14px rgba(34, 34, 30, 0.14)",
-                marginLeft: "18px",
-              }}
-              title="Atendimento por Telefone e WhatsApp"
-            >
-              {/* Ícone Destacado na Borda Esquerda */}
-              <span
-                style={{
-                  position: "absolute",
-                  left: "-12px",
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "999px",
-                  background: "#98A67C",
-                  color: "#1F1F1C",
-                  border: "2px solid #FBFBF9",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 2px 8px rgba(31, 31, 28, 0.15)",
-                }}
-              >
-                <Phone size={15} strokeWidth={2.4} />
-              </span>
-
-              <span
-                style={{
-                  fontSize: "0.95rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.01em",
                   color: "#FBFBF9",
                 }}
               >
-                {tenant.phone || "(11) 3456-7890"}
+                {primaryBrand.charAt(0).toUpperCase()}
               </span>
-            </a>
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: "2px",
+                  right: "2px",
+                  width: "9px",
+                  height: "9px",
+                  borderRadius: "999px",
+                  background: "#98A67C",
+                  border: "2px solid #FBFBF9",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "6px",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontSize: "1.55rem",
+                    fontWeight: 600,
+                    letterSpacing: "-0.03em",
+                    color: "#1F1F1C",
+                    lineHeight: 1,
+                  }}
+                >
+                  {primaryBrand}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontStyle: "italic",
+                    fontSize: "1.1rem",
+                    fontWeight: 400,
+                    color: "#5F5E58",
+                    lineHeight: 1,
+                  }}
+                >
+                  residências
+                </span>
+              </div>
+              <span
+                style={{
+                  fontSize: "0.64rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "#76875B",
+                  marginTop: "3px",
+                }}
+              >
+                Consultoria Imobiliária
+              </span>
+            </div>
           </div>
 
-          {/* Botão Menu Mobile */}
-          <div className="mobile-menu-toggle" style={{ display: "none" }}>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="btn btn-ghost"
-              style={{ padding: "8px" }}
-              aria-label="Abrir Menu"
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 2ª FAIXA INFERIOR: Barra de Abas (INÍCIO | EMPRESA | VENDA | LOCAÇÃO | TEMPORADA | CONTATO) + Favoritos & Redes */}
-      <div
-        className="desktop-tabs-bar"
-        style={{
-          background: "#FFFFFF",
-        }}
-      >
-        <div
-          className="container"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            minHeight: "48px",
-          }}
-        >
-          {/* Abas de Navegação */}
+          {/* 2. Navegação Central em Pílula Flutuante (Floating Capsule Dock) */}
           <nav
+            className="desktop-pill-nav"
             aria-label="Navegação Principal"
             style={{
               display: "flex",
-              alignItems: "stretch",
-              height: "48px",
+              alignItems: "center",
+              gap: "4px",
+              padding: "5px",
+              background: "#F3F1EB",
+              border: "1px solid #E4E1D7",
+              borderRadius: "999px",
+              boxShadow: "inset 0 1px 2px rgba(31, 31, 28, 0.03)",
             }}
           >
             {NAV_TABS.map((tab) => {
@@ -276,36 +280,49 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => handleTabClick(tab.id)}
                   style={{
                     position: "relative",
-                    padding: "0 22px",
-                    height: "48px",
+                    padding: "8px 18px",
                     border: "none",
+                    borderRadius: "999px",
                     background: "transparent",
-                    color: isActive ? "#FBFBF9" : "#5F5E58",
-                    fontSize: "0.76rem",
-                    fontWeight: isActive ? 700 : 600,
-                    letterSpacing: "0.07em",
-                    textTransform: "uppercase",
+                    color: isActive ? "#FBFBF9" : "#4A4943",
+                    fontSize: "0.84rem",
+                    fontWeight: isActive ? 600 : 500,
+                    letterSpacing: "-0.01em",
                     cursor: "pointer",
                     transition: "color 0.2s ease",
                     display: "inline-flex",
                     alignItems: "center",
-                    justifyContent: "center",
+                    gap: "7px",
                     zIndex: 1,
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {isActive && (
                     <motion.span
-                      layoutId="activeNavbarTabBlock"
+                      layoutId="activeNavbarCapsule"
                       transition={{
                         type: "spring",
-                        stiffness: 380,
+                        stiffness: 400,
                         damping: 32,
                       }}
                       style={{
                         position: "absolute",
                         inset: 0,
+                        borderRadius: "999px",
                         background: "#22221E",
+                        boxShadow: "0 2px 10px rgba(34, 34, 30, 0.16)",
                         zIndex: -1,
+                      }}
+                    />
+                  )}
+                  {isActive && (
+                    <span
+                      style={{
+                        width: "6px",
+                        height: "6px",
+                        borderRadius: "999px",
+                        background: "#98A67C",
+                        flexShrink: 0,
                       }}
                     />
                   )}
@@ -315,86 +332,146 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Ações à Direita (Ícones Sociais + Favoritos ★ + Voltar se Admin) */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <a
-              href={settings.socialLinks?.instagram || "https://instagram.com"}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Redes Sociais da Imobiliária"
-              style={{
-                width: "34px",
-                height: "34px",
-                borderRadius: "6px",
-                background: "#22221E",
-                color: "#FBFBF9",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                textDecoration: "none",
-                fontWeight: 700,
-                fontSize: "0.85rem",
-              }}
-            >
-              <Share2 size={14} />
-            </a>
-
+          {/* 3. Ações à Direita: Pílula de Favoritos + Botão Orgânico com Recorte Diagonal */}
+          <div
+            className="desktop-actions-col"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              flexShrink: 0,
+            }}
+          >
+            {/* Botão Salvos / Favoritos em Cápsula */}
             <button
               type="button"
               onClick={onOpenFavorites}
-              title="Imóveis Favoritos Salvos"
+              title="Imóveis Salvos nos Favoritos"
               style={{
-                position: "relative",
-                width: "34px",
-                height: "34px",
-                borderRadius: "6px",
-                background: favoritesCount > 0 ? "#98A67C" : "#22221E",
-                border: "none",
-                color: favoritesCount > 0 ? "#1F1F1C" : "#FBFBF9",
                 display: "inline-flex",
                 alignItems: "center",
-                justifyContent: "center",
+                gap: "8px",
+                padding: "9px 15px",
+                borderRadius: "999px",
+                background: favoritesCount > 0 ? "#E8ECE0" : "#F3F1EB",
+                border:
+                  favoritesCount > 0
+                    ? "1px solid #98A67C"
+                    : "1px solid #E4E1D7",
+                color: "#1F1F1C",
+                fontSize: "0.82rem",
+                fontWeight: 600,
                 cursor: "pointer",
+                transition: "all 0.2s ease",
               }}
             >
-              <Star
+              <Bookmark
                 size={15}
-                fill={favoritesCount > 0 ? "#1F1F1C" : "currentColor"}
+                color="#4A593D"
+                fill={favoritesCount > 0 ? "#4A593D" : "none"}
               />
-              {favoritesCount > 0 && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "-5px",
-                    right: "-5px",
-                    background: "#22221E",
-                    color: "#FBFBF9",
-                    fontSize: "0.62rem",
-                    fontWeight: 800,
-                    width: "16px",
-                    height: "16px",
-                    borderRadius: "999px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {favoritesCount}
-                </span>
-              )}
+              <span>Salvos</span>
+              <span
+                style={{
+                  minWidth: "20px",
+                  height: "20px",
+                  padding: "0 6px",
+                  borderRadius: "999px",
+                  background: favoritesCount > 0 ? "#22221E" : "#E4E1D7",
+                  color: favoritesCount > 0 ? "#FBFBF9" : "#5F5E58",
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {favoritesCount}
+              </span>
             </button>
+
+            {/* Botão Orgânico Bipartido (Atendimento Consultivo via WhatsApp) */}
+            <a
+              href={`https://wa.me/55${(
+                tenant.whatsapp ||
+                tenant.phone ||
+                ""
+              ).replace(/\D/g, "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Falar com um Consultor no WhatsApp"
+              style={{
+                display: "inline-flex",
+                alignItems: "stretch",
+                textDecoration: "none",
+                gap: "2px",
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "7px",
+                  background: "#22221E",
+                  color: "#FBFBF9",
+                  padding: "9px 16px 9px 16px",
+                  borderRadius: "999px 6px 6px 999px",
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                <Sparkles size={13} color="#98A67C" />
+                <span>Agendar Visita</span>
+              </span>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "36px",
+                  background: "#98A67C",
+                  color: "#1F1F1C",
+                  borderRadius: "6px 999px 999px 6px",
+                }}
+              >
+                <ArrowUpRight size={15} strokeWidth={2.2} />
+              </span>
+            </a>
 
             {currentView === "admin" && (
               <button
                 type="button"
                 onClick={() => onNavigate("catalog")}
-                className="btn btn-gold btn-sm"
-                style={{ fontSize: "0.75rem", marginLeft: "6px" }}
+                className="btn btn-outline btn-sm"
+                style={{
+                  fontSize: "0.76rem",
+                  borderRadius: "999px",
+                  padding: "8px 14px",
+                }}
               >
                 <ArrowLeft size={14} />
-                <span>Voltar ao Site</span>
+                <span>Ver Site</span>
               </button>
             )}
+          </div>
+
+          {/* Botão Menu Mobile */}
+          <div className="mobile-menu-toggle" style={{ display: "none" }}>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="btn btn-ghost"
+              style={{
+                padding: "8px 12px",
+                borderRadius: "999px",
+                border: "1px solid #E4E1D7",
+                background: "#F3F1EB",
+              }}
+              aria-label="Abrir Menu"
+            >
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
           </div>
         </div>
       </div>
@@ -419,7 +496,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={() => handleTabClick(tab.id)}
                 className={`btn ${isActive ? "btn-gold" : "btn-outline"}`}
-                style={{ justifyContent: "flex-start" }}
+                style={{ justifyContent: "flex-start", borderRadius: "999px" }}
               >
                 <span>{tab.label}</span>
               </button>
@@ -430,7 +507,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             style={{
               display: "flex",
               gap: "8px",
-              paddingTop: "8px",
+              paddingTop: "10px",
               borderTop: "1px solid #E4E1D7",
             }}
           >
@@ -441,10 +518,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onOpenFavorites()
               }}
               className="btn btn-outline"
-              style={{ flex: 1 }}
+              style={{ flex: 1, borderRadius: "999px" }}
             >
-              <Star size={16} color="#4A593D" />
-              <span>Favoritos ({favoritesCount})</span>
+              <Bookmark size={15} color="#4A593D" />
+              <span>Salvos ({favoritesCount})</span>
             </button>
 
             {tenant.whatsapp && (
@@ -452,10 +529,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 href={`https://wa.me/55${tenant.whatsapp.replace(/\D/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-outline"
-                style={{ flex: 1, color: "#1E5631", textDecoration: "none" }}
+                className="btn btn-gold"
+                style={{
+                  flex: 1,
+                  textDecoration: "none",
+                  borderRadius: "999px",
+                }}
               >
-                <MessageCircle size={16} />
+                <MessageCircle size={15} />
                 <span>WhatsApp</span>
               </a>
             )}
@@ -464,8 +545,10 @@ export const Navbar: React.FC<NavbarProps> = ({
       )}
 
       <style>{`
-        @media (max-width: 900px) {
-          .top-email-col, .top-phone-col, .desktop-tabs-bar {
+        @media (max-width: 1080px) {
+          .editorial-top-ribbon,
+          .desktop-pill-nav,
+          .desktop-actions-col {
             display: none !important;
           }
           .mobile-menu-toggle {

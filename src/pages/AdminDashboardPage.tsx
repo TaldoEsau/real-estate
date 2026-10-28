@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Calendar, Clock, DollarSign, Users, Eye, Database, RefreshCw, ExternalLink, MessageSquare, LogOut, User as UserIcon } from 'lucide-react';
+import { Building2, Calendar, Clock, DollarSign, Users, Eye, Database, RefreshCw, ExternalLink, MessageSquare, LogOut, User as UserIcon, Flame, BarChart3 } from 'lucide-react';
 import { Property, BookingRequest, Lead } from '../types';
 import { StorageService } from '../services/storageService';
 import { LeadService } from '../services/leadService';
 import { AuthService } from '../services/authService';
+import { AnalyticsService, subscribeToAnalytics } from '../services/analyticsService';
 import { formatCurrency } from '../utils/formatters';
 import { PropertyInventoryTable } from '../components/admin/PropertyInventoryTable';
 import { BookingTable } from '../components/admin/BookingTable';
 import { AvailabilityManager } from '../components/admin/AvailabilityManager';
 import { LeadManagementTable } from '../components/admin/LeadManagementTable';
 import { AgentManagementTable } from '../components/admin/AgentManagementTable';
+import { AnalyticsReportsPanel } from '../components/admin/AnalyticsReportsPanel';
 
 interface AdminDashboardPageProps {
   onPreviewProperty: (property: Property) => void;
@@ -22,12 +24,16 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
   onRefresh,
   onLogout
 }) => {
-  const [activeTab, setActiveTab] = useState<'listings' | 'bookings' | 'availability' | 'leads' | 'agents'>('agents');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'listings' | 'bookings' | 'availability' | 'leads' | 'agents'>('analytics');
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [, setAnalyticsTick] = useState(0);
   const currentUser = AuthService.getCurrentUser();
+  const analyticsStore = AnalyticsService.getStore();
 
   useEffect(() => {
     LeadService.getLeads().then(setLeads);
+    const unsubAnalytics = subscribeToAnalytics(() => setAnalyticsTick(t => t + 1));
+    return unsubAnalytics;
   }, []);
 
   const properties = StorageService.getProperties();
@@ -111,6 +117,16 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
         gap: '18px',
         marginBottom: '36px'
       }}>
+        <div className="glass-panel" style={{ padding: '20px', cursor: 'pointer', background: '#22221E', color: '#FBFBF9' }} onClick={() => setActiveTab('analytics')}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.8rem', color: '#E8ECE0' }}>Acessos & Sensor de Calor</span>
+            <Flame size={18} color="#98A67C" />
+          </div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 600, fontFamily: 'var(--font-serif)', color: '#FFFFFF' }}>
+            {analyticsStore.totalPageViews.toLocaleString('pt-BR')} <span style={{ fontSize: '0.85rem', fontFamily: 'var(--font-sans)', color: '#C7C5BC', fontWeight: 400 }}>acessos</span>
+          </div>
+        </div>
+
         <div className="glass-panel" style={{ padding: '20px', cursor: 'pointer', background: '#F3F1EB' }} onClick={() => setActiveTab('listings')}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Imóveis Ativos</span>
@@ -174,6 +190,14 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
         overflowX: 'auto'
       }}>
         <button
+          onClick={() => setActiveTab('analytics')}
+          className={`btn ${activeTab === 'analytics' ? 'btn-gold' : 'btn-outline'}`}
+        >
+          <BarChart3 size={16} />
+          <span>Relatórios, Acessos & Mapa de Calor</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('leads')}
           className={`btn ${activeTab === 'leads' ? 'btn-gold' : 'btn-outline'}`}
         >
@@ -228,6 +252,15 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({
       </div>
 
       {/* Tab Panels */}
+      {activeTab === 'analytics' && (
+        <AnalyticsReportsPanel
+          properties={properties}
+          bookings={bookings}
+          leads={leads}
+          onPreviewProperty={onPreviewProperty}
+        />
+      )}
+
       {activeTab === 'agents' && (
         <AgentManagementTable
           agents={agents}

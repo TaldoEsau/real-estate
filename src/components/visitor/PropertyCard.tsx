@@ -15,6 +15,7 @@ import {
 import { Property } from "../../types"
 import { formatCurrency, formatAreaM2 } from "../../utils/formatters"
 import { useFavorites } from "../../context/FavoritesContext"
+import { AnalyticsService } from "../../services/analyticsService"
 import {
   CutoutCard,
   CutoutCardAction,
@@ -205,6 +206,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
+                  if (!favorited) {
+                    AnalyticsService.trackPropertyFavorite(property)
+                  }
                   toggleFavorite(property.id)
                 }}
                 title={favorited ? "Remover dos favoritos" : "Salvar nos favoritos"}
@@ -335,6 +339,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
+                          AnalyticsService.trackPropertyPreview(property)
                           setPreviewOpen(true)
                         }}
                         className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#D8D4C8] bg-[#F3F1EB] px-4 py-2 text-xs font-semibold text-[#1F1F1C] transition-colors hover:border-[#22221E] hover:bg-[#22221E] hover:text-[#FBFBF9]"

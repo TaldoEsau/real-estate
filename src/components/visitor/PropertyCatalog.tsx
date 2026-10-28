@@ -19,6 +19,7 @@ import { useTenant } from '../../context/TenantContext';
 import { OrganicButton } from '@/components/ui/organic-button';
 import { VideoPresentationHero, PublicTab } from './VideoPresentationHero';
 import { EmpresaView, ContatoView } from './CompanyInfoSections';
+import { AnalyticsService } from '../../services/analyticsService';
 
 interface PropertyCatalogProps {
   properties: Property[];
@@ -81,13 +82,19 @@ export const PropertyCatalog: React.FC<PropertyCatalogProps> = ({
     }
   }, [activeTab]);
 
-  // Salva os filtros no sessionStorage a cada alteração
+  // Salva os filtros no sessionStorage a cada alteração e envia telemetria de busca (debounce 700ms)
   useEffect(() => {
     try {
       sessionStorage.setItem(STORAGE_FILTER_KEY, JSON.stringify(filters));
     } catch (e) {
       console.warn('Erro ao salvar filtros na sessão:', e);
     }
+
+    const timer = setTimeout(() => {
+      AnalyticsService.trackSearchFilter(filters);
+    }, 700);
+
+    return () => clearTimeout(timer);
   }, [filters]);
 
   // 1. Estados únicos disponíveis

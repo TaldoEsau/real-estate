@@ -113,7 +113,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
     }));
   };
 
-  // Upload múltiplo de fotos para o Supabase Storage
+  // Processa as fotos localmente no navegador
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -837,7 +837,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
                   Upload de Fotos do Imóvel
                 </h4>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 16px 0' }}>
-                  Envie fotos em alta resolução (JPG, PNG, WEBP). O upload armazena direto no Supabase Storage.
+                  Envie fotos em alta resolução (JPG, PNG, WEBP). As imagens são mantidas somente neste navegador.
                 </p>
 
                 <label className="btn btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>

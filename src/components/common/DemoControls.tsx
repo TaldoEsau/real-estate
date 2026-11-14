@@ -37,7 +37,7 @@ export const DemoControls: React.FC<DemoControlsProps> = ({ currentView, onToggl
       boxShadow: 'var(--shadow-elevated)',
       fontSize: '0.75rem'
     }}>
-      {/* Supabase Status Pill */}
+      {/* Status do armazenamento */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <div style={{
           width: '8px',

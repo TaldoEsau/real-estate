@@ -1,10 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
-
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
-
-export const supabase = isSupabaseConfigured 
-  ? createClient(supabaseUrl, supabaseAnonKey) 
-  : null;
+/**
+ * O site funciona exclusivamente com dados locais.
+ *
+ * Mantemos estes exports para que os serviços existentes possam continuar
+ * usando seus fallbacks locais sem criar um cliente ou fazer requisições
+ * para um banco de dados.
+ */
+export const isSupabaseConfigured = false;
+export const supabase: SupabaseClient | null = null;

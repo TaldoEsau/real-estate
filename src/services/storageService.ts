@@ -49,7 +49,7 @@ function setLocal<T>(key: string, value: T): void {
   }
 }
 
-let currentSupabaseStatus: 'checking' | 'ready' | 'missing_tables' | 'disabled' = 'ready';
+let currentSupabaseStatus: 'checking' | 'ready' | 'missing_tables' | 'disabled' = 'disabled';
 
 const seedPropById = new Map(SEED_PROPERTIES.map(p => [p.id, p]));
 const seedAgentById = new Map(SEED_AGENTS.map(a => [a.id, a]));

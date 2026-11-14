@@ -4,8 +4,8 @@ export const SEED_AGENTS: Agent[] = [
   {
     id: 'a1111111-1111-1111-1111-111111111111',
     name: 'Alexandra Vance',
-    email: 'alexandra.vance@auraimoveis.com.br',
-    phone: '+55 (11) 98849-2201',
+    email: 'esau.035@gmail.com',
+    phone: '+55 17 997577374',
     role: 'Especialista Sênior em Alto Padrão & Sócia',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
     bio: 'Mais de 12 anos de experiência em intermediação de propriedades de alto padrão e condomínios fechados.'
@@ -13,8 +13,8 @@ export const SEED_AGENTS: Agent[] = [
   {
     id: 'a2222222-2222-2222-2222-222222222222',
     name: 'Julian Montgomery',
-    email: 'julian.m@auraimoveis.com.br',
-    phone: '+55 (11) 99650-8840',
+    email: 'esau.035@gmail.com',
+    phone: '+55 17 997577374',
     role: 'Consultor Principal de Arquitetura & Investimentos',
     avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80',
     bio: 'Especialista em coberturas, lofts contemporâneos e consultoria de investimentos imobiliários.'

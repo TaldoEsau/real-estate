@@ -144,7 +144,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
                 borderColor: errors.clientEmail ? '#EF4444' : undefined,
                 ...inputDisabledStyle
               }}
-              placeholder="nome@dominio.com.br"
+              placeholder="esau.035@gmail.com"
               value={formData.clientEmail}
               onChange={e => setFormData({ ...formData, clientEmail: e.target.value })}
             />
@@ -167,7 +167,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
                 borderColor: errors.clientPhone ? '#EF4444' : undefined,
                 ...inputDisabledStyle
               }}
-              placeholder="(11) 98765-4321"
+              placeholder="+55 17 997577374"
               value={formData.clientPhone}
               onChange={e => setFormData({ ...formData, clientPhone: e.target.value })}
             />
@@ -238,4 +238,3 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, isSubmitting
     </form>
   );
 };
-

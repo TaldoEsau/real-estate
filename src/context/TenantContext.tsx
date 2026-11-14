@@ -16,9 +16,9 @@ const DEFAULT_TENANT: Tenant = {
   name: 'Aura Consultoria Imobiliária',
   legalName: 'Aura Negócios Imobiliários Ltda',
   documentNumber: '12.345.678/0001-90',
-  email: 'contato@auraimoveis.com.br',
-  phone: '+55 (11) 3456-7890',
-  whatsapp: '+55 (11) 98765-4321',
+  email: 'esau.035@gmail.com',
+  phone: '+55 17 997577374',
+  whatsapp: '+55 17 997577374',
   address: {
     street: 'Avenida Brigadeiro Faria Lima',
     number: '3477',
@@ -47,7 +47,7 @@ const DEFAULT_SETTINGS: TenantSettings = {
     instagram: 'https://instagram.com',
     facebook: 'https://facebook.com',
     linkedin: 'https://linkedin.com',
-    whatsapp: '5511987654321'
+    whatsapp: '5517997577374'
   },
   metaTitle: 'Aura Imóveis | Consultoria Imobiliária de Alto Padrão',
   metaDescription: 'Encontre imóveis de alto padrão para venda e locação com agendamento imediato.',
@@ -62,6 +62,9 @@ const DEFAULT_CATEGORIES: PropertyCategory[] = [
   { id: 'c4', tenantId: DEFAULT_TENANT.id, name: 'Salas Comerciais', slug: 'sala-comercial', icon: 'briefcase', displayOrder: 4 }
 ];
 
+const OWNER_EMAIL = 'esau.035@gmail.com';
+const OWNER_PHONE = '+55 17 997577374';
+
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -72,9 +75,15 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const parsed = JSON.parse(cached);
         if (parsed.name === 'Aura Real Estate Advisory' || parsed.name === 'Aura Estates') {
           parsed.name = DEFAULT_TENANT.name;
-          localStorage.setItem('moliaria_active_tenant', JSON.stringify(parsed));
         }
-        return parsed;
+        const normalizedTenant = {
+          ...parsed,
+          email: OWNER_EMAIL,
+          phone: OWNER_PHONE,
+          whatsapp: OWNER_PHONE
+        };
+        localStorage.setItem('moliaria_active_tenant', JSON.stringify(normalizedTenant));
+        return normalizedTenant;
       } catch {
         return DEFAULT_TENANT;
       }
@@ -89,9 +98,17 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const parsed = JSON.parse(cached);
         if (parsed.metaTitle && parsed.metaTitle.includes('Aura Real Estate')) {
           parsed.metaTitle = DEFAULT_SETTINGS.metaTitle;
-          localStorage.setItem('moliaria_tenant_settings', JSON.stringify(parsed));
         }
-        return parsed;
+        const normalizedSettings = {
+          ...parsed,
+          socialLinks: {
+            ...DEFAULT_SETTINGS.socialLinks,
+            ...parsed.socialLinks,
+            whatsapp: '5517997577374'
+          }
+        };
+        localStorage.setItem('moliaria_tenant_settings', JSON.stringify(normalizedSettings));
+        return normalizedSettings;
       } catch {
         return DEFAULT_SETTINGS;
       }

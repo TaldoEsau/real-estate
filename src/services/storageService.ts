@@ -11,6 +11,9 @@ const STORAGE_KEYS = {
   SUPABASE_STATUS: 'aura_supabase_status_v1'
 };
 
+const OWNER_EMAIL = 'esau.035@gmail.com';
+const OWNER_PHONE = '+55 17 997577374';
+
 type Listener = () => void;
 const listeners: Listener[] = [];
 
@@ -114,6 +117,10 @@ export function initializeStorage(): void {
         changed = true;
         return seedMatch;
       }
+      if (seedMatch && (a.email !== OWNER_EMAIL || a.phone !== OWNER_PHONE)) {
+        changed = true;
+        return { ...a, email: OWNER_EMAIL, phone: OWNER_PHONE };
+      }
       return a;
     });
     if (changed) {
@@ -132,8 +139,8 @@ export function initializeStorage(): void {
     date: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
     timeSlot: '14:00 - 14:45',
     clientName: 'Henrique Albuquerque',
-    clientEmail: 'henrique@albuquerqueinvestimentos.com.br',
-    clientPhone: '+55 (11) 98880-9210',
+    clientEmail: 'esau.035@gmail.com',
+    clientPhone: '+55 17 997577374',
     notes: 'Interesse em aquisição para residência principal. Irei acompanhado do arquiteto da família.',
     status: 'confirmed',
     agentId: 'a1111111-1111-1111-1111-111111111111',
@@ -285,8 +292,8 @@ async function checkAndSyncSupabase() {
               date: cb.date,
               timeSlot: cb.time_slot,
               clientName: 'Henrique Albuquerque',
-              clientEmail: 'henrique@albuquerqueinvestimentos.com.br',
-              clientPhone: '+55 (11) 98880-9210',
+              clientEmail: 'esau.035@gmail.com',
+              clientPhone: '+55 17 997577374',
               notes: 'Interesse em aquisição para residência principal. Irei acompanhado do arquiteto da família.',
               status: cb.status || 'confirmed',
               agentId: cb.agent_id || 'a1111111-1111-1111-1111-111111111111',

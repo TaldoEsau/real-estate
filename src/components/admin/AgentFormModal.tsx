@@ -230,7 +230,7 @@ export const AgentFormModal: React.FC<AgentFormModalProps> = ({
                   className="form-input"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="mariana@imobiliaria.com.br"
+                  placeholder="esau.035@gmail.com"
                 />
               </div>
 
@@ -244,7 +244,7 @@ export const AgentFormModal: React.FC<AgentFormModalProps> = ({
                   className="form-input"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  placeholder="(11) 98765-4321"
+                  placeholder="+55 17 997577374"
                 />
               </div>
             </div>
@@ -310,7 +310,7 @@ export const AgentFormModal: React.FC<AgentFormModalProps> = ({
                   className="form-input"
                   value={whatsapp}
                   onChange={e => setWhatsapp(e.target.value)}
-                  placeholder="5511987654321"
+                  placeholder="+55 17 997577374"
                 />
               </div>
             </div>

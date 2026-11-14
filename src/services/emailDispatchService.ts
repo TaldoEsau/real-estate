@@ -19,8 +19,8 @@ export const EmailDispatchService = {
     const agent = StorageService.getAgentById(booking.agentId);
     const formattedDate = formatDateString(booking.date);
     const agentName = agent ? agent.name : 'Alexandra Vance';
-    const agentPhone = agent ? agent.phone : '+55 (11) 98849-2201';
-    const agentEmail = agent ? agent.email : 'alexandra.vance@auraimoveis.com.br';
+    const agentPhone = agent ? agent.phone : '+55 17 997577374';
+    const agentEmail = agent ? agent.email : 'esau.035@gmail.com';
     const refCode = booking.id.slice(0, 8).toUpperCase();
 
     const fullLocation = property 
@@ -192,8 +192,8 @@ export const EmailDispatchService = {
     const agent = StorageService.getAgentById(booking.agentId);
     const formattedDate = formatDateString(booking.date);
     const agentName = agent ? agent.name : 'Alexandra Vance';
-    const agentPhone = agent ? agent.phone : '+55 (11) 98849-2201';
-    const agentEmail = agent ? agent.email : 'alexandra.vance@auraimoveis.com.br';
+    const agentPhone = agent ? agent.phone : '+55 17 997577374';
+    const agentEmail = agent ? agent.email : 'esau.035@gmail.com';
     const refCode = booking.id.slice(0, 8).toUpperCase();
 
     const fullLocation = property 
@@ -214,7 +214,7 @@ export const EmailDispatchService = {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: 'Aura Imóveis <onboarding@resend.dev>',
+            from: 'Aura Imóveis <esau.035@gmail.com>',
             to: [booking.clientEmail],
             subject: subject,
             html: htmlContent

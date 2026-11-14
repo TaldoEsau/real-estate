@@ -10,7 +10,7 @@ export const NotificationService = {
   }> {
     const property = StorageService.getPropertyById(booking.propertyId);
     const agent = StorageService.getAgentById(booking.agentId);
-    const agentEmail = agent ? agent.email : 'contato@auraimoveis.com.br';
+    const agentEmail = agent ? agent.email : 'esau.035@gmail.com';
 
     const formattedDate = formatDateString(booking.date);
     const refCode = booking.id.slice(0, 8).toUpperCase();

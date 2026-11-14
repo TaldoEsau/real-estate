@@ -40,7 +40,7 @@ export const ConfirmationReceipt: React.FC<ConfirmationReceiptProps> = ({
   const mailtoBody = encodeURIComponent(
     `Olá ${agent ? agent.name : 'Consultoria Imobiliária'},\n\nConfirmei minha visita presencial ao imóvel ${booking.propertyTitle} para o dia ${formatDateString(booking.date)} às ${booking.timeSlot}.\n\nReferência: #${booking.id.slice(0, 8).toUpperCase()}\nCliente: ${booking.clientName}\nTelefone: ${booking.clientPhone}`
   );
-  const mailtoUrl = `mailto:${agent ? agent.email : 'contato@auraimoveis.com.br'}?subject=${mailtoSubject}&body=${mailtoBody}`;
+  const mailtoUrl = `mailto:${agent ? agent.email : 'esau.035@gmail.com'}?subject=${mailtoSubject}&body=${mailtoBody}`;
 
   return (
     <div className="modal-overlay" onClick={onClose}>

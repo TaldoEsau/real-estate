@@ -120,7 +120,7 @@ export const PropertyInquiryForm: React.FC<PropertyInquiryFormProps> = ({
                 type="tel"
                 required
                 className="form-input"
-                placeholder="(11) 98765-4321"
+                placeholder="+55 17 997577374"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
@@ -131,7 +131,7 @@ export const PropertyInquiryForm: React.FC<PropertyInquiryFormProps> = ({
                 type="email"
                 required
                 className="form-input"
-                placeholder="seu@email.com"
+                placeholder="esau.035@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />

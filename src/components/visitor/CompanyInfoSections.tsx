@@ -419,7 +419,7 @@ export const ContatoView: React.FC = () => {
       await LeadService.submitGeneralContact({
         tenantId: tenant.id,
         name: name.trim(),
-        email: email.trim() || "nao-informado@cliente.com",
+        email: email.trim() || "esau.035@gmail.com",
         phone: phone.trim(),
         message: `[Assunto: ${subject}] ${message.trim()}`,
       })
@@ -594,7 +594,7 @@ export const ContatoView: React.FC = () => {
                     type="text"
                     required
                     className="form-input"
-                    placeholder="(11) 99999-9999"
+                    placeholder="+55 17 997577374"
                     value={phone}
                     onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
                   />
@@ -607,7 +607,7 @@ export const ContatoView: React.FC = () => {
                   <input
                     type="email"
                     className="form-input"
-                    placeholder="seuemail@exemplo.com"
+                    placeholder="esau.035@gmail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />

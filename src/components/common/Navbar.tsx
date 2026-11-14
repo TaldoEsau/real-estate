@@ -109,7 +109,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Direita: Contato Rápido Discreto */}
           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
             <a
-              href={`mailto:${tenant.email || "contato@auraimoveis.com.br"}`}
+              href={`mailto:${tenant.email || "esau.035@gmail.com"}`}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -120,7 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
             >
               <Mail size={12} color="#98A67C" />
-              <span>{tenant.email || "contato@auraimoveis.com.br"}</span>
+              <span>{tenant.email || "esau.035@gmail.com"}</span>
             </a>
 
             <span style={{ opacity: 0.25 }}>|</span>
@@ -137,7 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
             >
               <Phone size={12} color="#98A67C" />
-              <span>{tenant.phone || "+55 (11) 3456-7890"}</span>
+              <span>{tenant.phone || "+55 17 997577374"}</span>
             </a>
           </div>
         </div>

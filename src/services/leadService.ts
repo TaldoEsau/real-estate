@@ -2,12 +2,23 @@ import { Lead, LeadType, LeadStatus } from '../types';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 const LOCAL_STORAGE_LEADS_KEY = 'moliaria_leads_v1';
+const OWNER_EMAIL = 'esau.035@gmail.com';
+const OWNER_PHONE = '+55 17 997577374';
 
 export class LeadService {
   private static getStoredLeads(): Lead[] {
     try {
       const data = localStorage.getItem(LOCAL_STORAGE_LEADS_KEY);
-      if (data) return JSON.parse(data);
+      if (data) {
+        const leads = JSON.parse(data) as Lead[];
+        const normalizedLeads = leads.map(lead =>
+          lead.id.startsWith('lead-seed-')
+            ? { ...lead, email: OWNER_EMAIL, phone: OWNER_PHONE }
+            : lead
+        );
+        localStorage.setItem(LOCAL_STORAGE_LEADS_KEY, JSON.stringify(normalizedLeads));
+        return normalizedLeads;
+      }
 
       const seedLeads: Lead[] = [
         {
@@ -18,8 +29,8 @@ export class LeadService {
           propertyCode: 'CB2088',
           leadType: 'property_inquiry',
           name: 'Renato Faria Guimarães',
-          email: 'renato.guimaraes@investimentos.com.br',
-          phone: '(11) 98122-4530',
+          email: 'esau.035@gmail.com',
+          phone: '+55 17 997577374',
           message: 'Gostaria de saber se o valor do condomínio inclui as 3 vagas demarcadas e se aceitam proposta à vista.',
           status: 'new',
           createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
@@ -33,8 +44,8 @@ export class LeadService {
           propertyCode: 'CS1042',
           leadType: 'property_inquiry',
           name: 'Dra. Beatriz Albuquerque',
-          email: 'beatriz.albuquerque@medicina.usp.br',
-          phone: '(11) 99455-8812',
+          email: 'esau.035@gmail.com',
+          phone: '+55 17 997577374',
           message: 'Tenho interesse em locação por temporada ou compra. O imóvel já possui gerador instalado?',
           status: 'contacted',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
@@ -48,8 +59,8 @@ export class LeadService {
           propertyCode: 'CS3050',
           leadType: 'report_error',
           name: 'Carlos Eduardo Santos',
-          email: 'carlos.santos@gmail.com',
-          phone: '(11) 97110-3344',
+          email: 'esau.035@gmail.com',
+          phone: '+55 17 997577374',
           message: 'O valor do IPTU informado parece com erro de digitação, no anúncio do portal constava outro valor.',
           details: { problemType: 'valor_incorreto' },
           status: 'new',
